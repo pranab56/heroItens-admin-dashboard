@@ -12,7 +12,7 @@ const geistSans = Geist({
 
 
 export const metadata: Metadata = {
-  title: "Peterson Dashboard",
+  title: "HeroItems Admin Dashboard",
   description: "Peterson Dashboard",
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],

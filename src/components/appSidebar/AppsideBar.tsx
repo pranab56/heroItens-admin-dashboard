@@ -63,7 +63,7 @@ const sidebars: SidebarItem[] = [
     icon: ShoppingCart,
     subItems: [
       { name: "All Products", path: "/shop-management/products", icon: ShoppingBag },
-      { name: "Add New Products", path: "/shop-management/products/new", icon: ClipboardList },
+      { name: "Add New Products", path: "/shop-management/new", icon: ClipboardList },
     ]
   },
   {
@@ -183,7 +183,7 @@ export default function OptimusSidebar() {
                                   asChild
                                   className={`h-10 px-4 rounded-lg transition-all duration-200 ${isSubItemActive
                                     ? "bg-[#1C2936] text-white"
-                                    : "text-gray-400 hover:bg-white/5 hover:text-white"
+                                    : "text-gray-100 hover:bg-white/5 hover:text-white"
                                     }`}
                                   isActive={isSubItemActive}
                                 >

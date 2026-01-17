@@ -12,6 +12,7 @@ import {
   Search,
   Trophy
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 // Category Interface
@@ -129,16 +130,22 @@ const statsData = [
 ];
 
 
-
+interface StatsCardProps {
+  icon: any;
+  title: string;
+  value: string;
+  valueColor: string;
+  bgColor: string;
+}
 
 
 
 
 
 // Stats Card Component
-const StatsCard = ({ icon: Icon, title, value, valueColor, bgColor }) => {
+const StatsCard = ({ icon: Icon, title, value, valueColor, bgColor }: StatsCardProps) => {
   return (
-    <Card className={`${bgColor} border-none`}>
+    <Card className={`${bgColor} border-none p-0`}>
       <CardContent className="p-6">
         <div className="flex items-start gap-3">
           <div className="p-2.5 bg-[#137FEC1F] rounded-lg">
@@ -161,6 +168,7 @@ export default function CategoryManagement() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [showAddModal, setShowAddModal] = useState(false);
+  const router = useRouter();
 
   const itemsPerPage = 7;
 
@@ -194,6 +202,7 @@ export default function CategoryManagement() {
   };
 
   const handleAddCategory = () => {
+    router.push("/shop-management/new");
     setShowAddModal(true);
   };
 

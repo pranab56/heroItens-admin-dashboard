@@ -26,7 +26,7 @@ interface User {
 const DEMO_USERS: User[] = [
   {
     _id: "1",
-    profile: "/profiles/user1.jpg",
+    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     first_name: "Jane",
     last_name: "Cooper",
     make: "Ford",
@@ -35,7 +35,7 @@ const DEMO_USERS: User[] = [
   },
   {
     _id: "2",
-    profile: "/profiles/user2.jpg",
+    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     first_name: "John",
     last_name: "Cooper",
     make: "Toyota",
@@ -44,7 +44,7 @@ const DEMO_USERS: User[] = [
   },
   {
     _id: "3",
-    profile: "",
+    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     first_name: "Robert",
     last_name: "Johnson",
     make: "Tesla",
@@ -53,7 +53,7 @@ const DEMO_USERS: User[] = [
   },
   {
     _id: "4",
-    profile: "/profiles/user4.jpg",
+    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     first_name: "Emily",
     last_name: "Wilson",
     make: "BMW",
@@ -62,7 +62,7 @@ const DEMO_USERS: User[] = [
   },
   {
     _id: "5",
-    profile: "/profiles/user5.jpg",
+    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     first_name: "Michael",
     last_name: "Brown",
     make: "Mercedes",
@@ -71,7 +71,7 @@ const DEMO_USERS: User[] = [
   },
   {
     _id: "6",
-    profile: "/profiles/user6.jpg",
+    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     first_name: "Sarah",
     last_name: "Davis",
     make: "Audi",
@@ -80,7 +80,7 @@ const DEMO_USERS: User[] = [
   },
   {
     _id: "7",
-    profile: "",
+    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     first_name: "David",
     last_name: "Miller",
     make: "Honda",
@@ -89,7 +89,7 @@ const DEMO_USERS: User[] = [
   },
   {
     _id: "8",
-    profile: "/profiles/user8.jpg",
+    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     first_name: "Lisa",
     last_name: "Taylor",
     make: "Hyundai",
@@ -98,7 +98,7 @@ const DEMO_USERS: User[] = [
   },
   {
     _id: "9",
-    profile: "/profiles/user9.jpg",
+    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     first_name: "James",
     last_name: "Anderson",
     make: "Chevrolet",

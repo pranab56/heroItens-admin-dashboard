@@ -1,46 +1,10 @@
+"use client";
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Car, Clock, Filter, Users, XCircle, Zap } from 'lucide-react';
-
-const StatsCard = ({ icon: Icon, title, value, valueColor, bgColor }) => {
-  return (
-    <Card className={`${bgColor} border-none`}>
-      <CardContent className="p-6">
-        <div className="flex items-start gap-3">
-          <div className="p-2.5 bg-blue-500/20 rounded-lg">
-            <Icon className="w-5 h-5 text-blue-400" />
-          </div>
-          <div className="flex-1">
-            <p className="text-gray-400 text-xs font-medium mb-1">{title}</p>
-            <p className={`text-2xl font-bold ${valueColor}`}>{value}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-const BarChart = ({ data }) => {
-  const maxValue = Math.max(...data.map(d => d.value));
-
-  return (
-    <div className="flex items-end justify-between h-48 gap-3 px-2">
-      {data.map((item, index) => (
-        <div key={index} className="flex flex-col items-center flex-1 gap-2">
-          <div className="w-full flex items-end justify-center" style={{ height: '160px' }}>
-            <div
-              className="w-full bg-gradient-to-t from-cyan-400 to-cyan-300 rounded-t-lg transition-all hover:opacity-80"
-              style={{
-                height: `${(item.value / maxValue) * 100}%`,
-                minHeight: '20px'
-              }}
-            />
-          </div>
-          <span className="text-gray-400 text-xs">{item.month}</span>
-        </div>
-      ))}
-    </div>
-  );
-};
+import { useState } from 'react';
+import { BarChart } from './BarChart';
+import { StatsCard } from './StatsCard';
 
 export default function AnalyticsLayout() {
   const statsData = [
@@ -86,7 +50,8 @@ export default function AnalyticsLayout() {
     }
   ];
 
-  const userGrowthData = [
+  // Original full year data
+  const fullYearData = [
     { month: 'Jan', value: 850 },
     { month: 'Feb', value: 650 },
     { month: 'Mar', value: 900 },
@@ -100,6 +65,67 @@ export default function AnalyticsLayout() {
     { month: 'Nov', value: 750 },
     { month: 'Dec', value: 1200 }
   ];
+
+  // Filter options
+  const filterOptions = [
+    { id: '3months', label: 'Last 3 Months', months: 3 },
+    { id: '6months', label: 'Last 6 Months', months: 6 },
+    { id: 'year', label: 'This Year', months: 12 },
+    { id: 'all', label: 'All Time', months: 12 }
+  ];
+
+  const [selectedFilter, setSelectedFilter] = useState('year');
+  const [userGrowthData, setUserGrowthData] = useState(fullYearData);
+
+  const handleFilterChange = (filterId: string) => {
+    setSelectedFilter(filterId);
+
+    let filteredData = [];
+    const currentDate = new Date();
+    const currentMonthIndex = currentDate.getMonth(); // 0-based index
+
+    switch (filterId) {
+      case '3months':
+        // Get last 3 months (including current month)
+        filteredData = fullYearData.slice(Math.max(0, currentMonthIndex - 2), currentMonthIndex + 1);
+        break;
+      case '6months':
+        // Get last 6 months
+        filteredData = fullYearData.slice(Math.max(0, currentMonthIndex - 5), currentMonthIndex + 1);
+        break;
+      case 'year':
+        // Get full year data
+        filteredData = [...fullYearData];
+        break;
+      case 'all':
+        // For demonstration, showing 2 years of data
+        const previousYearData = [
+          { month: 'Jan', value: 700 },
+          { month: 'Feb', value: 550 },
+          { month: 'Mar', value: 800 },
+          { month: 'Apr', value: 1100 },
+          { month: 'May', value: 850 },
+          { month: 'Jun', value: 700 },
+          { month: 'Jul', value: 1000 },
+          { month: 'Aug', value: 1200 },
+          { month: 'Sep', value: 1050 },
+          { month: 'Oct', value: 850 },
+          { month: 'Nov', value: 650 },
+          { month: 'Dec', value: 1100 }
+        ];
+
+        // Combine with current year data, adding year suffix
+        filteredData = [
+          ...previousYearData.map(item => ({ ...item, month: `${item.month} '24` })),
+          ...fullYearData.map(item => ({ ...item, month: `${item.month} '25` }))
+        ];
+        break;
+      default:
+        filteredData = [...fullYearData];
+    }
+
+    setUserGrowthData(filteredData);
+  };
 
   const pendingVerifications = [
     {
@@ -148,7 +174,7 @@ export default function AnalyticsLayout() {
 
   return (
     <div className="">
-      <div className=" space-y-6">
+      <div className="space-y-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {statsData.map((stat) => (
@@ -168,12 +194,93 @@ export default function AnalyticsLayout() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">User Growth</h2>
-              <button className="flex items-center gap-2 px-4 py-2 bg-[#1C2936] rounded-lg text-sm text-gray-300 hover:bg-[#1C2936] transition-colors">
-                <Filter className="w-4 h-4" />
-                Filter by Months
-              </button>
+
+              {/* Filter Dropdown */}
+              <div className="relative group">
+                <button className="flex items-center gap-2 px-4 py-2 bg-[#1C2936] border border-slate-700 rounded-lg text-sm text-gray-300 hover:bg-[#2D3748] transition-colors">
+                  <Filter className="w-4 h-4" />
+                  Filter by Months
+                </button>
+
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 mt-2 w-48 bg-[#1C2936] border border-slate-700 rounded-lg shadow-lg z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  {filterOptions.map((option) => (
+                    <button
+                      key={option.id}
+                      onClick={() => handleFilterChange(option.id)}
+                      className={`w-full text-left px-4 py-3 text-sm hover:bg-[#2D3748] transition-colors ${selectedFilter === option.id
+                        ? 'text-cyan-400 bg-[#2D3748]'
+                        : 'text-gray-300'
+                        }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>{option.label}</span>
+                        {selectedFilter === option.id && (
+                          <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
+
+            {/* Active Filter Display */}
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-sm text-gray-400">Showing:</span>
+              <div className="flex flex-wrap gap-2">
+                {filterOptions
+                  .filter(option => selectedFilter === option.id)
+                  .map(option => (
+                    <span
+                      key={option.id}
+                      className="px-3 py-1 bg-cyan-400/10 text-cyan-400 text-xs rounded-full border border-cyan-400/20"
+                    >
+                      {option.label}
+                    </span>
+                  ))}
+              </div>
+            </div>
+
             <BarChart data={userGrowthData} />
+
+            {/* Summary */}
+            <div className="mt-6 pt-6 border-t border-slate-700">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <p className="text-gray-400 text-sm">Total Users (Period)</p>
+                  <p className="text-2xl font-semibold text-white">
+                    {userGrowthData.reduce((sum, item) => sum + item.value, 0).toLocaleString()}
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-gray-400 text-sm">Average Monthly</p>
+                  <p className="text-2xl font-semibold text-white">
+                    {Math.round(userGrowthData.reduce((sum, item) => sum + item.value, 0) / userGrowthData.length).toLocaleString()}
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-gray-400 text-sm">Highest Month</p>
+                  <p className="text-2xl font-semibold text-white">
+                    {Math.max(...userGrowthData.map(item => item.value)).toLocaleString()}
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-gray-400 text-sm">Growth Rate</p>
+                  <p className="text-2xl font-semibold text-green-400">
+                    {(() => {
+                      if (userGrowthData.length >= 2) {
+                        const first = userGrowthData[0].value;
+                        const last = userGrowthData[userGrowthData.length - 1].value;
+                        const growth = ((last - first) / first) * 100;
+                        return `${growth > 0 ? '+' : ''}${growth.toFixed(1)}%`;
+                      }
+                      return '0%';
+                    })()}
+                  </p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -199,7 +306,7 @@ export default function AnalyticsLayout() {
                     />
                     <span className="text-gray-300 text-sm">{item.ownerName}</span>
                     <span className="text-gray-400 text-sm">{item.date}</span>
-                    <button className="text-green-400 text-sm font-medium hover:text-green-300">
+                    <button className="text-green-400 hover:underline cursor-pointer text-sm font-medium hover:text-green-300">
                       Review
                     </button>
                   </div>
@@ -232,7 +339,7 @@ export default function AnalyticsLayout() {
                       </div>
                     </div>
                     <span className="text-gray-300 text-sm">{item.votes}</span>
-                    <button className="text-red-400 text-sm font-medium hover:text-red-300">
+                    <button className="text-red-400 hover:underline cursor-pointer text-sm font-medium hover:text-red-300">
                       Reset
                     </button>
                   </div>

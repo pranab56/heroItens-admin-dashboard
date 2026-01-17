@@ -32,7 +32,7 @@ interface Car {
 const DEMO_CARS: Car[] = [
   {
     _id: "1",
-    image: "/cars/mustang.jpg",
+    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&h=400&fit=crop",
     ownerName: "Jane Cooper",
     ownerProfile: "/profiles/jane.jpg",
     ownerMemberSince: "May 2020",
@@ -42,91 +42,47 @@ const DEMO_CARS: Car[] = [
     year: "2022",
     caseNumber: "8829",
     submittedTime: "2 hours ago",
-    thumbnails: ["/cars/mustang-1.jpg", "/cars/mustang-2.jpg", "/cars/mustang-3.jpg"]
+    thumbnails: [
+      "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1542362567-b07e54358753?w=400&h=300&fit=crop"
+    ]
   },
   {
     _id: "2",
-    image: "/cars/mustang.jpg",
-    ownerName: "Jane Cooper",
-    ownerProfile: "/profiles/jane.jpg",
-    ownerMemberSince: "May 2020",
-    date: "October 24, 2025",
-    make: "Ford",
-    model: "Mustang 2022",
-    year: "2022",
+    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&h=400&fit=crop",
+    ownerName: "John Doe",
+    ownerProfile: "/profiles/john.jpg",
+    ownerMemberSince: "June 2021",
+    date: "October 25, 2025",
+    make: "Tesla",
+    model: "Model S",
+    year: "2023",
     caseNumber: "8830",
     submittedTime: "3 hours ago",
-    thumbnails: ["/cars/mustang-1.jpg", "/cars/mustang-2.jpg", "/cars/mustang-3.jpg"]
+    thumbnails: [
+      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1566470469039-6d61f50a05e0?w=400&h=300&fit=crop"
+    ]
   },
   {
     _id: "3",
-    image: "/cars/mustang.jpg",
-    ownerName: "Jane Cooper",
-    ownerProfile: "/profiles/jane.jpg",
-    ownerMemberSince: "May 2020",
-    date: "October 24, 2025",
-    make: "Ford",
-    model: "Mustang 2022",
-    year: "2022",
+    image: "https://images.unsplash.com/photo-1566470469039-6d61f50a05e0?w=600&h=400&fit=crop",
+    ownerName: "Robert Johnson",
+    ownerProfile: "/profiles/robert.jpg",
+    ownerMemberSince: "March 2019",
+    date: "October 26, 2025",
+    make: "Chevrolet",
+    model: "Corvette Stingray",
+    year: "2024",
     caseNumber: "8831",
     submittedTime: "5 hours ago",
-    thumbnails: ["/cars/mustang-1.jpg", "/cars/mustang-2.jpg", "/cars/mustang-3.jpg"]
-  },
-  {
-    _id: "4",
-    image: "/cars/mustang.jpg",
-    ownerName: "Jane Cooper",
-    ownerProfile: "/profiles/jane.jpg",
-    ownerMemberSince: "May 2020",
-    date: "October 24, 2025",
-    make: "Ford",
-    model: "Mustang 2022",
-    year: "2022",
-    caseNumber: "8832",
-    submittedTime: "1 day ago",
-    thumbnails: ["/cars/mustang-1.jpg", "/cars/mustang-2.jpg", "/cars/mustang-3.jpg"]
-  },
-  {
-    _id: "5",
-    image: "/cars/mustang.jpg",
-    ownerName: "Jane Cooper",
-    ownerProfile: "/profiles/jane.jpg",
-    ownerMemberSince: "May 2020",
-    date: "October 24, 2025",
-    make: "Ford",
-    model: "Mustang 2022",
-    year: "2022",
-    caseNumber: "8833",
-    submittedTime: "2 days ago",
-    thumbnails: ["/cars/mustang-1.jpg", "/cars/mustang-2.jpg", "/cars/mustang-3.jpg"]
-  },
-  {
-    _id: "6",
-    image: "/cars/mustang.jpg",
-    ownerName: "Jane Cooper",
-    ownerProfile: "/profiles/jane.jpg",
-    ownerMemberSince: "May 2020",
-    date: "October 24, 2025",
-    make: "Ford",
-    model: "Mustang 2022",
-    year: "2022",
-    caseNumber: "8834",
-    submittedTime: "3 days ago",
-    thumbnails: ["/cars/mustang-1.jpg", "/cars/mustang-2.jpg", "/cars/mustang-3.jpg"]
-  },
-  {
-    _id: "7",
-    image: "/cars/mustang.jpg",
-    ownerName: "Jane Cooper",
-    ownerProfile: "/profiles/jane.jpg",
-    ownerMemberSince: "May 2020",
-    date: "October 24, 2025",
-    make: "Ford",
-    model: "Mustang 2022",
-    year: "2022",
-    caseNumber: "8835",
-    submittedTime: "4 days ago",
-    thumbnails: ["/cars/mustang-1.jpg", "/cars/mustang-2.jpg", "/cars/mustang-3.jpg"]
+    thumbnails: [
+      "https://images.unsplash.com/photo-1566470469039-6d61f50a05e0?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&h=300&fit=crop"
+    ]
   }
 ];
 
@@ -163,6 +119,7 @@ export default function CarManagement() {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [mainImage, setMainImage] = useState<string>('');
 
   const itemsPerPage = 7;
 
@@ -195,6 +152,7 @@ export default function CarManagement() {
 
   const handleViewDetails = (car: Car) => {
     setSelectedCar(car);
+    setMainImage(car.image); // Set initial main image
     setShowDetailsModal(true);
   };
 
@@ -214,12 +172,29 @@ export default function CarManagement() {
     console.log('Car approved:', selectedCar);
     setShowApproveModal(false);
     setSelectedCar(null);
+    setMainImage('');
   };
 
   const handleConfirmReject = () => {
     console.log('Car rejected:', selectedCar);
     setShowRejectModal(false);
     setSelectedCar(null);
+    setMainImage('');
+  };
+
+  // Handle thumbnail click
+  const handleThumbnailClick = (imageUrl: string) => {
+    setMainImage(imageUrl);
+  };
+
+  // Handle main image click to cycle through images
+  const handleMainImageClick = () => {
+    if (!selectedCar) return;
+
+    const allImages = [selectedCar.image, ...selectedCar.thumbnails];
+    const currentIndex = allImages.indexOf(mainImage);
+    const nextIndex = (currentIndex + 1) % allImages.length;
+    setMainImage(allImages[nextIndex]);
   };
 
   // Pagination handlers
@@ -265,10 +240,10 @@ export default function CarManagement() {
           />
         </div>
 
-        <div className="w-full md:w-auto relative">
+        <div className="w-full md:w-auto relative h-full">
           <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 z-10" size={20} />
-          <Select>
-            <SelectTrigger className="w-full md:w-[200px] h-12 bg-[#0d1829] border-gray-700 text-white pl-12 rounded-lg cursor-pointer">
+          <Select onValueChange={() => { }}>
+            <SelectTrigger className="w-full md:w-[200px] h-20 py-[23px] bg-[#0d1829] border-gray-700 text-white pl-12 rounded-lg cursor-pointer">
               <SelectValue placeholder="Filter: 2025" />
             </SelectTrigger>
             <SelectContent className='bg-[#1a2942] border-gray-700 text-white cursor-pointer'>
@@ -394,21 +369,94 @@ export default function CarManagement() {
         {selectedCar && (
           <div className="bg-[#0f1c2e] rounded-xl w-[90vw] max-w-4xl max-h-[90vh] overflow-hidden flex">
             {/* Left Side - Car Image */}
-            <div className="w-1/2 bg-[#1a2942] p-6">
-              <div className="relative h-[400px] rounded-xl overflow-hidden mb-4">
+            <div className="w-1/2 bg-[#1a2942] p-6 flex flex-col">
+              {/* Main Image */}
+              <div
+                className="relative h-[400px] rounded-xl overflow-hidden mb-4 cursor-pointer group"
+                onClick={handleMainImageClick}
+              >
                 <Image
-                  src={selectedCar.image}
+                  src={mainImage}
                   alt={selectedCar.model}
                   fill
-                  className="object-cover"
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
                 />
+                <div className="absolute inset-0 bg-linear-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-4">
+                  <div className="bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg text-xs text-white">
+                    Click to view next image
+                  </div>
+                </div>
               </div>
-              <div className="grid grid-cols-3 gap-3">
+
+              {/* Image Counter */}
+              <div className="flex items-center justify-between mb-4 text-sm text-gray-400">
+                <span>Image {[selectedCar.image, ...selectedCar.thumbnails].indexOf(mainImage) + 1} of {selectedCar.thumbnails.length + 1}</span>
+                <div className="flex items-center gap-1">
+                  {[selectedCar.image, ...selectedCar.thumbnails].map((_, index) => (
+                    <div
+                      key={index}
+                      className={`w-2 h-2 rounded-full transition-all duration-200 ${[selectedCar.image, ...selectedCar.thumbnails].indexOf(mainImage) === index ? 'bg-cyan-400' : 'bg-gray-600'}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Thumbnails */}
+              <div className="grid grid-cols-4 gap-3">
+                {/* Original Main Image Thumbnail */}
+                <div
+                  className={`relative h-24 rounded-lg overflow-hidden cursor-pointer transition-all duration-200 border-2 ${mainImage === selectedCar.image ? 'border-cyan-400' : 'border-transparent'}`}
+                  onClick={() => handleThumbnailClick(selectedCar.image)}
+                >
+                  <Image
+                    src={selectedCar.image}
+                    alt="Main image"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 25vw, 12.5vw"
+                  />
+                  {mainImage === selectedCar.image && (
+                    <div className="absolute inset-0 bg-cyan-400/20 flex items-center justify-center">
+                      <div className="w-6 h-6 bg-cyan-400 rounded-full flex items-center justify-center">
+                        <Check size={14} className="text-white" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Thumbnail Images */}
                 {selectedCar.thumbnails.map((thumb, index) => (
-                  <div key={index} className="relative h-24 rounded-lg overflow-hidden">
-                    <Image src={thumb} alt={`Thumbnail ${index + 1}`} fill className="object-cover" />
+                  <div
+                    key={index}
+                    className={`relative h-24 rounded-lg overflow-hidden cursor-pointer transition-all duration-200 border-2 ${mainImage === thumb ? 'border-cyan-400' : 'border-transparent'}`}
+                    onClick={() => handleThumbnailClick(thumb)}
+                  >
+                    <Image
+                      src={thumb}
+                      alt={`Thumbnail ${index + 1}`}
+                      fill
+                      className="object-cover hover:scale-110 transition-transform duration-200"
+                      sizes="(max-width: 768px) 25vw, 12.5vw"
+                    />
+                    {mainImage === thumb && (
+                      <div className="absolute inset-0 bg-cyan-400/20 flex items-center justify-center">
+                        <div className="w-6 h-6 bg-cyan-400 rounded-full flex items-center justify-center">
+                          <Check size={14} className="text-white" />
+                        </div>
+                      </div>
+                    )}
+                    <div className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                      {index + 1}
+                    </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Navigation Tips */}
+              <div className="mt-4 text-center text-xs text-gray-500">
+                <p>Click on thumbnails to view full image • Click on main image for next</p>
               </div>
             </div>
 

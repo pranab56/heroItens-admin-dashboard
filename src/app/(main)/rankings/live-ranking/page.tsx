@@ -23,49 +23,49 @@ interface Car {
 const DEMO_CARS: Car[] = [
   {
     _id: "1",
-    image: "/cars/mustang.jpg",
+    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     carName: "Hypercars",
     carModal: "W16 Quad-Turbo . France",
     vote: 5
   },
   {
     _id: "2",
-    image: "/cars/mustang.jpg",
+    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     carName: "Hypercars",
     carModal: "W16 Quad-Turbo . France",
     vote: 5
   },
   {
     _id: "3",
-    image: "/cars/mustang.jpg",
+    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     carName: "Hypercars",
     carModal: "W16 Quad-Turbo . France",
     vote: 5
   },
   {
     _id: "4",
-    image: "/cars/mustang.jpg",
+    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     carName: "Hypercars",
     carModal: "W16 Quad-Turbo . France",
     vote: 5
   },
   {
     _id: "5",
-    image: "/cars/mustang.jpg",
+    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     carName: "Hypercars",
     carModal: "W16 Quad-Turbo . France",
     vote: 5
   },
   {
     _id: "6",
-    image: "/cars/mustang.jpg",
+    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     carName: "Hypercars",
     carModal: "W16 Quad-Turbo . France",
     vote: 5
   },
   {
     _id: "7",
-    image: "/cars/mustang.jpg",
+    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
     carName: "Hypercars",
     carModal: "W16 Quad-Turbo . France",
     vote: 5
