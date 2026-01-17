@@ -43,7 +43,7 @@ interface Car {
 // Demo Data
 const DEMO_USER: User = {
   _id: "1",
-  profile: "/profiles/john-cooper.jpg",
+  profile: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=100&h=60&fit=crop",
   first_name: "John",
   last_name: "Cooper",
   email: "john@gmail.com",
@@ -55,7 +55,7 @@ const DEMO_USER: User = {
 const DEMO_CARS: Car[] = [
   {
     _id: "1",
-    image: "/cars/ford-mustang-1.jpg",
+    image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=100&h=60&fit=crop",
     name: "Ford Mustang",
     year: 1967,
     bodyType: "Fastback",
@@ -65,7 +65,7 @@ const DEMO_CARS: Car[] = [
   },
   {
     _id: "2",
-    image: "/cars/ford-mustang-2.jpg",
+    image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=100&h=60&fit=crop",
     name: "Ford Mustang",
     year: 1967,
     bodyType: "Fastback",
@@ -174,8 +174,8 @@ export default function UserDetailsPage() {
                       <Image
                         src={car.image}
                         alt={`${car.year} ${car.name}`}
-                        width={192}
-                        height={160}
+                        width={1000}
+                        height={1000}
                         className="w-full h-full object-cover"
                       />
                     </div>
