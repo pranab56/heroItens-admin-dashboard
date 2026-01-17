@@ -1,10 +1,41 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+
+/* ===== Custom Scrollbar ===== */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1C2936 #101922;
+}
+
+/* Chrome, Edge, Safari */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #101922;
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #1C2936;
+  border-radius: 10px;
+  border: 2px solid #101922;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #243447;
+}
+
+
 /* Line clamp utilities */
 .line-clamp-3 {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -49,6 +80,10 @@
 .prose u {
   text-decoration: underline;
 }
+
+
+
+
 
 @custom-variant dark (&:is(.dark *));
 
