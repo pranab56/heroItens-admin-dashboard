@@ -51,22 +51,9 @@ export default function ForgotPasswordPage() {
 
     try {
       const response = await forgotEmail({ email: email }).unwrap() as ForgotEmailResponse;
-
-      // Show success state
       setIsSuccess(true);
-
-      // Show success toast
       toast.success(response.message || 'OTP sent successfully!');
-
-      // Redirect to OTP verification page with token
-      if (response.data?.forgetToken) {
-        // Add small delay for better UX
-        setTimeout(() => {
-          router.push(`/auth/verify-email?forgetToken=${response.data?.forgetToken}`);
-        }, 1000);
-      } else {
-        toast.error('Invalid response from server');
-      }
+      router.push(`/auth/verify-email?email=${email}`);
     } catch (error) {
       const apiError = error as ApiError;
       toast.error(apiError?.data?.message || 'Failed to send OTP. Please try again.');
@@ -182,7 +169,7 @@ export default function ForgotPasswordPage() {
                     disabled={isLoading || isSuccess || !email}
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
-                    className="relative w-full bg-linear-to-br from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group-hover:shadow-lg group-hover:shadow-blue-500/25 flex items-center justify-center gap-2"
+                    className="relative w-full cursor-pointer bg-linear-to-br from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group-hover:shadow-lg group-hover:shadow-blue-500/25 flex items-center justify-center gap-2"
                   >
                     {isLoading ? (
                       <>

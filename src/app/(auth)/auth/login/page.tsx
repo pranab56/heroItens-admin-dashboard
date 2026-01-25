@@ -80,11 +80,7 @@ export default function LoginPage() {
         if (response.data) {
           saveToken(response.data?.accessToken);
           toast.success(response.message || 'Login successful!');
-
-          // Create a smooth transition effect before redirect
           await new Promise(resolve => setTimeout(resolve, 800));
-
-          // Redirect to home page
           router.push('/');
         } else {
           toast.error('No access token received');

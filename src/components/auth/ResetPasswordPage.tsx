@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useResetPasswordMutation } from '../../features/auth/authApi';
 
 interface ResetPasswordData {
   newPassword: string;
@@ -24,10 +25,11 @@ export default function ResetPasswordPage() {
     newPassword: '',
     confirmPassword: ''
   });
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const router = useRouter();
   const searchParams = useSearchParams();
-  const forgetToken = searchParams.get("forgetOtpMatchToken") || 'demo-reset-token-12345';
+  const forgetToken = searchParams.get("token");
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
 
   const validatePassword = (password: string): string => {
     if (!password) {
@@ -77,37 +79,21 @@ export default function ResetPasswordPage() {
         return;
       }
 
-      setIsLoading(true);
+
 
       const resetData: ResetPasswordData = {
         newPassword: newPassword,
         confirmPassword: confirmPassword,
         token: forgetToken
       };
-
-      // Simulate API call
-      setTimeout(() => {
-        setIsLoading(false);
-
-        console.log("===============================");
-        console.log("Reset Password Details:");
-        console.log("===============================");
-        console.log("Reset Data:", resetData);
-        console.log("Timestamp:", new Date().toLocaleString());
-        console.log("Password Strength:", calculatePasswordStrength(newPassword));
-        console.log("===============================");
-
-        toast.success('Password reset successful!');
-
-        // Clear form fields
-        setNewPassword('');
-        setConfirmPassword('');
-
-        // Show success animation
-        setTimeout(() => {
-          router.push('/auth/login');
-        }, 2000);
-      }, 1500);
+      try {
+        const response = await resetPassword(resetData).unwrap();
+        toast.success(response?.message || 'Password reset successfully!');
+        router.push('/auth/login');
+      } catch (error) {
+        console.error("Password Reset Error:", error);
+        toast.error('Failed to reset password. Please try again.');
+      }
     }
   };
 

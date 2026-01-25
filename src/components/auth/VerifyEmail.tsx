@@ -4,6 +4,7 @@ import { CheckCircle, Key, RotateCcw } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ClipboardEvent, FormEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useForgotEmailMutation, useForgotEmailOTPCheckMutation } from '../../features/auth/authApi';
 
 export default function VerifyEmail() {
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']); // 6 digits
@@ -11,12 +12,12 @@ export default function VerifyEmail() {
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const [isResendHovered, setIsResendHovered] = useState<boolean>(false);
   const [countdown, setCountdown] = useState<number>(60); // 60 seconds countdown
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [resendLoading, setResendLoading] = useState<boolean>(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const forgetToken = searchParams.get("forgetToken") || 'demo-token-12345';
+  const email = searchParams.get("email");
+  const [verifyEmail, { isLoading }] = useForgotEmailOTPCheckMutation();
+  const [resend, { isLoading: resendLoading }] = useForgotEmailMutation();
 
   // Fixed ref callback
   const setInputRef = (index: number) => (el: HTMLInputElement | null) => {
@@ -87,45 +88,19 @@ export default function VerifyEmail() {
       return;
     }
 
-    if (!forgetToken) {
-      setError('Invalid token. Please try again.');
-      toast.error('Invalid token. Please try again.');
-      return;
+    try {
+      const response = await verifyEmail({ email: email, otp: parseFloat(otpValue) }).unwrap();
+      console.log(response)
+      toast.success(response?.message || 'OTP verified successfully!');
+      router.push(`/auth/reset-password?token=${response?.data}`);
+    } catch (error) {
+      console.error("OTP Verification Error:", error);
+      toast.error('Invalid OTP. Please try again.');
     }
 
-    setIsLoading(true);
 
-    // Simulate API call delay
-    setTimeout(() => {
-      setIsLoading(false);
 
-      console.log("===============================");
-      console.log("OTP Verification Details:");
-      console.log("===============================");
-      console.log("OTP Entered:", otpValue);
-      console.log("Forget Token:", forgetToken);
-      console.log("Timestamp:", new Date().toLocaleString());
-      console.log("Device Info:", {
-        userAgent: navigator.userAgent,
-        platform: navigator.platform
-      });
-      console.log("===============================");
 
-      toast.success('OTP verified successfully!');
-
-      // Simulate successful verification
-      const mockResponse = {
-        data: {
-          forgetOtpMatchToken: 'demo-otp-match-token-67890'
-        },
-        message: 'OTP verified successfully!'
-      };
-
-      console.log("Mock API Response:", mockResponse);
-
-      // Redirect to reset password page
-      router.push(`/auth/reset-password?forgetOtpMatchToken=${mockResponse.data.forgetOtpMatchToken}`);
-    }, 1500);
   };
 
   // Handle resend
@@ -135,30 +110,14 @@ export default function VerifyEmail() {
       return;
     }
 
-    setResendLoading(true);
-
-    console.log("===============================");
-    console.log("Resend OTP Request:");
-    console.log("===============================");
-    console.log("Forget Token:", forgetToken);
-    console.log("Resend Time:", new Date().toLocaleString());
-    console.log("===============================");
-
-    // Simulate API call delay
-    setTimeout(() => {
-      setResendLoading(false);
-      setOtp(['', '', '', '', '', '']);
-      setCountdown(60);
-      setError('');
-
-      console.log("OTP Resent Successfully!");
-      console.log("New OTP would be sent to registered email");
-
-      toast.success('OTP resent successfully!');
-
-      // Focus first input
-      inputRefs.current[0]?.focus();
-    }, 1000);
+    try {
+      const response = await resend({ email: email }).unwrap();
+      toast.success(response?.message || 'OTP resent successfully!');
+      setCountdown(60); // Reset countdown
+    } catch (error) {
+      console.error("Resend OTP Error:", error);
+      toast.error('Failed to resend OTP. Please try again later.');
+    }
   };
 
   return (
@@ -257,7 +216,7 @@ export default function VerifyEmail() {
 
                 {/* Verify Button */}
                 <div className="relative group">
-                  <div className="absolute -inset-1 bg-linear-to-r from-blue-500 via-cyan-400 to-blue-500 rounded-xl blur opacity-70 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-gradient-x"></div>
+                  <div className="absolute -inset-1 bg-linear-to-r from-blue-500 via-cyan-400 to-blue-500 rounded-xl blur opacity-70 group-hover:opacity-100 transition cursor-pointer duration-1000 group-hover:duration-200 animate-gradient-x"></div>
                   <button
                     type="submit"
                     disabled={isLoading || otp.join('').length !== 6}
@@ -290,7 +249,7 @@ export default function VerifyEmail() {
                     disabled={resendLoading || countdown > 0}
                     onMouseEnter={() => setIsResendHovered(true)}
                     onMouseLeave={() => setIsResendHovered(false)}
-                    className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+                    className="inline-flex items-center cursor-pointer gap-2 text-blue-400 hover:text-blue-300 font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
                   >
                     <RotateCcw size={16} className={`transition-transform duration-300 ${isResendHovered ? 'rotate-180' : ''} ${resendLoading ? 'animate-spin' : ''}`} />
                     <span>

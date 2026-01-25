@@ -14,46 +14,29 @@ export const authApi = baseApi.injectEndpoints({
 
     forgotEmail: builder.mutation({
       query: (forgotEmail) => ({
-        url: "/auth/forgot-password-otp",
+        url: "/auth/resend-otp",
         method: "POST",
         body: forgotEmail,
       }),
     }),
 
     forgotEmailOTPCheck: builder.mutation({
-      query: ({ otp, token }) => ({
-        url: "/auth/forgot-password-otp-match",
-        method: "PATCH",
-        headers: {
-          token: token,
-          "Content-Type": "application/json"
-        },
-        body: { otp },  // <-- must be an object
+      query: (data) => ({
+        url: "/auth/verify-email",
+        method: "POST",
+        body: data,
       }),
     }),
 
-    resendPassword: builder.mutation({
-      query: (token) => ({
-        url: "/otp/resend-otp",
-        method: "PATCH",
-        headers: {
-          token: token,
-          "Content-Type": "application/json"
-        },
-      }),
-    }),
 
     resetPassword: builder.mutation({
       query: ({ token, newPassword, confirmPassword }) => ({
-        url: "/auth/forgot-password-reset",
-        method: "PATCH",
-        headers: {
-          token: `${token}`,
-          "Content-Type": "application/json"
-        },
+        url: "/auth/reset-password",
+        method: "POST",
         body: {
           newPassword: newPassword,
           confirmPassword: confirmPassword,
+          token: token,
         },
       }),
     }),
@@ -66,6 +49,5 @@ export const {
   useLoginMutation,
   useForgotEmailMutation,
   useForgotEmailOTPCheckMutation,
-  useResetPasswordMutation,
-  useResendPasswordMutation
+  useResetPasswordMutation
 } = authApi;

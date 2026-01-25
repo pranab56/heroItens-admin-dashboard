@@ -1,11 +1,11 @@
 export const saveToken = (token) => {
-  localStorage.setItem("PharmacyAdmin", token);
+  localStorage.setItem("HeroItemsAdmin", token);
 };
 
 export const getToken = () => {
-  return localStorage.getItem("PharmacyAdmin");
+  return localStorage.getItem("HeroItemsAdmin");
 };
 
 export const removeToken = () => {
-  localStorage.removeItem("PharmacyAdmin");
+  localStorage.removeItem("HeroItemsAdmin");
 };
