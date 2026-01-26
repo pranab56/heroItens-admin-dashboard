@@ -78,7 +78,7 @@ export default function LoginPage() {
 
         // Save token to storage
         if (response.data) {
-          saveToken(response.data?.accessToken);
+          saveToken(response?.data?.token);
           toast.success(response.message || 'Login successful!');
           await new Promise(resolve => setTimeout(resolve, 800));
           router.push('/');

@@ -1,18 +1,31 @@
 "use client";
 
 import { Card, CardContent } from '@/components/ui/card';
+import { useOverviewQuery } from '@/features/overview/overviewApi';
 import { Car, Clock, Filter, Users, XCircle, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { BarChart } from './BarChart';
 import { StatsCard } from './StatsCard';
 
 export default function AnalyticsLayout() {
+  const { data, isLoading } = useOverviewQuery({});
+
+  // Transform API data for BarChart
+  const transformUserGrowthData = () => {
+    if (!data?.data?.userGrowth) return [];
+
+    return data.data.userGrowth.map(item => ({
+      month: item.month,
+      value: item.count
+    }));
+  };
+
   const statsData = [
     {
       id: 1,
       icon: Users,
       title: 'Total Users',
-      value: '12,450',
+      value: data?.data?.totalUser || 0,
       valueColor: 'text-cyan-400',
       bgColor: 'bg-[#1C2936]'
     },
@@ -20,7 +33,7 @@ export default function AnalyticsLayout() {
       id: 2,
       icon: Car,
       title: 'Total Cars',
-      value: '4,200',
+      value: data?.data?.totalCar || 0,
       valueColor: 'text-cyan-400',
       bgColor: 'bg-[#1C2936]'
     },
@@ -28,7 +41,7 @@ export default function AnalyticsLayout() {
       id: 3,
       icon: Zap,
       title: 'Total Votes',
-      value: '45.2k',
+      value: data?.data?.totalVotes || 0,
       valueColor: 'text-cyan-400',
       bgColor: 'bg-[#1C2936]'
     },
@@ -36,7 +49,7 @@ export default function AnalyticsLayout() {
       id: 4,
       icon: Clock,
       title: 'Pending Cars',
-      value: '188',
+      value: data?.data?.pendingCar || 0,
       valueColor: 'text-yellow-400',
       bgColor: 'bg-[#1C2936]'
     },
@@ -44,26 +57,10 @@ export default function AnalyticsLayout() {
       id: 5,
       icon: XCircle,
       title: 'Reject Cars',
-      value: '27',
+      value: data?.data?.rejectedCar || 0,
       valueColor: 'text-red-400',
       bgColor: 'bg-[#1C2936]'
     }
-  ];
-
-  // Original full year data
-  const fullYearData = [
-    { month: 'Jan', value: 850 },
-    { month: 'Feb', value: 650 },
-    { month: 'Mar', value: 900 },
-    { month: 'Apr', value: 1200 },
-    { month: 'May', value: 950 },
-    { month: 'Jun', value: 800 },
-    { month: 'Jul', value: 1100 },
-    { month: 'Aug', value: 1300 },
-    { month: 'Sep', value: 1150 },
-    { month: 'Oct', value: 950 },
-    { month: 'Nov', value: 750 },
-    { month: 'Dec', value: 1200 }
   ];
 
   // Filter options
@@ -75,56 +72,10 @@ export default function AnalyticsLayout() {
   ];
 
   const [selectedFilter, setSelectedFilter] = useState('year');
-  const [userGrowthData, setUserGrowthData] = useState(fullYearData);
+  const userGrowthData = transformUserGrowthData();
 
   const handleFilterChange = (filterId: string) => {
     setSelectedFilter(filterId);
-
-    let filteredData = [];
-    const currentDate = new Date();
-    const currentMonthIndex = currentDate.getMonth(); // 0-based index
-
-    switch (filterId) {
-      case '3months':
-        // Get last 3 months (including current month)
-        filteredData = fullYearData.slice(Math.max(0, currentMonthIndex - 2), currentMonthIndex + 1);
-        break;
-      case '6months':
-        // Get last 6 months
-        filteredData = fullYearData.slice(Math.max(0, currentMonthIndex - 5), currentMonthIndex + 1);
-        break;
-      case 'year':
-        // Get full year data
-        filteredData = [...fullYearData];
-        break;
-      case 'all':
-        // For demonstration, showing 2 years of data
-        const previousYearData = [
-          { month: 'Jan', value: 700 },
-          { month: 'Feb', value: 550 },
-          { month: 'Mar', value: 800 },
-          { month: 'Apr', value: 1100 },
-          { month: 'May', value: 850 },
-          { month: 'Jun', value: 700 },
-          { month: 'Jul', value: 1000 },
-          { month: 'Aug', value: 1200 },
-          { month: 'Sep', value: 1050 },
-          { month: 'Oct', value: 850 },
-          { month: 'Nov', value: 650 },
-          { month: 'Dec', value: 1100 }
-        ];
-
-        // Combine with current year data, adding year suffix
-        filteredData = [
-          ...previousYearData.map(item => ({ ...item, month: `${item.month} '24` })),
-          ...fullYearData.map(item => ({ ...item, month: `${item.month} '25` }))
-        ];
-        break;
-      default:
-        filteredData = [...fullYearData];
-    }
-
-    setUserGrowthData(filteredData);
   };
 
   const pendingVerifications = [
@@ -171,6 +122,42 @@ export default function AnalyticsLayout() {
       votes: '12,450'
     }
   ];
+
+  // Filter data based on selected filter
+  const getFilteredData = () => {
+    if (!userGrowthData.length) return [];
+
+    const currentDate = new Date();
+    const currentMonthIndex = currentDate.getMonth(); // 0-based index (Jan = 0)
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    switch (selectedFilter) {
+      case '3months':
+        // Get last 3 months (including current month)
+        return userGrowthData.slice(Math.max(0, currentMonthIndex - 2), currentMonthIndex + 1);
+      case '6months':
+        // Get last 6 months
+        return userGrowthData.slice(Math.max(0, currentMonthIndex - 5), currentMonthIndex + 1);
+      case 'year':
+        // Get full year data (all 12 months from API)
+        return userGrowthData;
+      case 'all':
+        // For all time, show all months (in your case, all 12 months from API)
+        return userGrowthData;
+      default:
+        return userGrowthData;
+    }
+  };
+
+  const filteredData = getFilteredData();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="">
@@ -242,45 +229,57 @@ export default function AnalyticsLayout() {
               </div>
             </div>
 
-            <BarChart data={userGrowthData} />
+            {filteredData.length > 0 ? (
+              <>
+                <BarChart data={filteredData} />
 
-            {/* Summary */}
-            <div className="mt-6 pt-6 border-t border-slate-700">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <p className="text-gray-400 text-sm">Total Users (Period)</p>
-                  <p className="text-2xl font-semibold text-white">
-                    {userGrowthData.reduce((sum, item) => sum + item.value, 0).toLocaleString()}
-                  </p>
+                {/* Summary */}
+                <div className="mt-6 pt-6 border-t border-slate-700">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center">
+                      <p className="text-gray-400 text-sm">Total Users (Period)</p>
+                      <p className="text-2xl font-semibold text-white">
+                        {filteredData.reduce((sum, item) => sum + item.value, 0).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-gray-400 text-sm">Average Monthly</p>
+                      <p className="text-2xl font-semibold text-white">
+                        {filteredData.length > 0
+                          ? Math.round(filteredData.reduce((sum, item) => sum + item.value, 0) / filteredData.length).toLocaleString()
+                          : '0'}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-gray-400 text-sm">Highest Month</p>
+                      <p className="text-2xl font-semibold text-white">
+                        {filteredData.length > 0
+                          ? Math.max(...filteredData.map(item => item.value)).toLocaleString()
+                          : '0'}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-gray-400 text-sm">Growth Rate</p>
+                      <p className="text-2xl font-semibold text-green-400">
+                        {(() => {
+                          if (filteredData.length >= 2) {
+                            const first = filteredData[0].value;
+                            const last = filteredData[filteredData.length - 1].value;
+                            const growth = ((last - first) / (first || 1)) * 100;
+                            return `${growth > 0 ? '+' : ''}${growth.toFixed(1)}%`;
+                          }
+                          return '0%';
+                        })()}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <p className="text-gray-400 text-sm">Average Monthly</p>
-                  <p className="text-2xl font-semibold text-white">
-                    {Math.round(userGrowthData.reduce((sum, item) => sum + item.value, 0) / userGrowthData.length).toLocaleString()}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-gray-400 text-sm">Highest Month</p>
-                  <p className="text-2xl font-semibold text-white">
-                    {Math.max(...userGrowthData.map(item => item.value)).toLocaleString()}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-gray-400 text-sm">Growth Rate</p>
-                  <p className="text-2xl font-semibold text-green-400">
-                    {(() => {
-                      if (userGrowthData.length >= 2) {
-                        const first = userGrowthData[0].value;
-                        const last = userGrowthData[userGrowthData.length - 1].value;
-                        const growth = ((last - first) / first) * 100;
-                        return `${growth > 0 ? '+' : ''}${growth.toFixed(1)}%`;
-                      }
-                      return '0%';
-                    })()}
-                  </p>
-                </div>
+              </>
+            ) : (
+              <div className="h-[300px] flex items-center justify-center">
+                <p className="text-gray-400">No user growth data available</p>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
