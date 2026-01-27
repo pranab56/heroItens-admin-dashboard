@@ -5,21 +5,15 @@ export const usersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAllUsers: builder.query({
       query: () => ({
-        url: "/users/all-users",
+        url: "/user",
         method: "GET",
       }),
     }),
 
-    updateBlockAndUnblock: builder.mutation({
-      query: (id) => ({
-        url: `/users/blocked/${id}`,
-        method: "PATCH",
-      }),
-    }),
 
     viewUserDetails: builder.query({
       query: (id) => ({
-        url: `/users/${id}`,
+        url: `/user/profile?userId=${id}`,
         method: "GET",
       }),
     }),
@@ -30,6 +24,5 @@ export const usersApi = baseApi.injectEndpoints({
 
 export const {
   useGetAllUsersQuery,
-  useUpdateBlockAndUnblockMutation,
   useViewUserDetailsQuery
 } = usersApi;
