@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { useCreateCategoryMutation, useDeleteCategoryMutation, useGetAllCategoryQuery, useUpdateCategoryMutation } from '@/features/category/categoryApi';
 import {
   AlertTriangle,
   Filter,
@@ -18,92 +19,20 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
 
-// Category Interface
+// Category Interface - Updated to match API response
 interface Category {
   _id: string;
   name: string;
-  totalCars: number;
-  votingActive: boolean;
-  coins: number;
-  slug: string;
+  totalCar: number;
+  voteStatus: boolean;
+  Reward: number;
+  categorySlug: string;
   description: string;
-  bannerImage: string;
+  image: string;
+  battleCost: number;
 }
-
-// Demo Data
-const DEMO_CATEGORIES: Category[] = [
-  {
-    _id: "1",
-    name: "Hypercars",
-    totalCars: 120,
-    votingActive: true,
-    coins: 100,
-    slug: "hypercars",
-    description: "Ultra-high-performance exotic cars",
-    bannerImage: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1200&h=400&fit=crop"
-  },
-  {
-    _id: "2",
-    name: "Muscle Cars",
-    totalCars: 98,
-    votingActive: true,
-    coins: 100,
-    slug: "muscle-cars",
-    description: "American classic muscle cars",
-    bannerImage: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=1200&h=400&fit=crop"
-  },
-  {
-    _id: "3",
-    name: "Supercars",
-    totalCars: 83,
-    votingActive: true,
-    coins: 100,
-    slug: "supercars",
-    description: "High-performance sports cars",
-    bannerImage: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1200&h=400&fit=crop"
-  },
-  {
-    _id: "4",
-    name: "JDM",
-    totalCars: 47,
-    votingActive: false,
-    coins: 100,
-    slug: "jdm",
-    description: "Japanese domestic market cars",
-    bannerImage: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=1200&h=400&fit=crop"
-  },
-  {
-    _id: "5",
-    name: "Classic Cars",
-    totalCars: 79,
-    votingActive: true,
-    coins: 100,
-    slug: "classic-cars",
-    description: "Vintage and classic automobiles",
-    bannerImage: "https://images.unsplash.com/photo-1542362567-b07e54358753?w=1200&h=400&fit=crop"
-  },
-  {
-    _id: "6",
-    name: "Off-Road",
-    totalCars: 131,
-    votingActive: true,
-    coins: 100,
-    slug: "off-road",
-    description: "Off-road and adventure vehicles",
-    bannerImage: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&h=400&fit=crop"
-  },
-  {
-    _id: "7",
-    name: "Hypercars",
-    totalCars: 177,
-    votingActive: true,
-    coins: 100,
-    slug: "hypercars-2",
-    description: "Ultra-high-performance exotic cars",
-    bannerImage: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=1200&h=400&fit=crop"
-  }
-];
 
 // Modal Component
 interface ModalProps {
@@ -131,13 +60,28 @@ const Modal = ({ open, onOpenChange, children, className = '' }: ModalProps) => 
 
 // Image Upload Preview Component
 interface ImageUploadProps {
-  image: string;
-  onImageChange: (image: string) => void;
+  image: File | string | null;
+  onImageChange: (image: File | string) => void;
   onRemove: () => void;
 }
 
 const ImageUploadPreview = ({ image, onImageChange, onRemove }: ImageUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<string>('');
+
+  useEffect(() => {
+    if (image instanceof File) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(image);
+    } else if (typeof image === 'string') {
+      setPreview(image);
+    } else {
+      setPreview('');
+    }
+  }, [image]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -152,12 +96,7 @@ const ImageUploadPreview = ({ image, onImageChange, onRemove }: ImageUploadProps
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        onImageChange(result);
-      };
-      reader.readAsDataURL(file);
+      onImageChange(file);
     }
   };
 
@@ -175,12 +114,7 @@ const ImageUploadPreview = ({ image, onImageChange, onRemove }: ImageUploadProps
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        onImageChange(result);
-      };
-      reader.readAsDataURL(file);
+      onImageChange(file);
     }
   };
 
@@ -203,7 +137,7 @@ const ImageUploadPreview = ({ image, onImageChange, onRemove }: ImageUploadProps
         className="hidden"
       />
 
-      {image ? (
+      {preview ? (
         <div className="relative p-4">
           <button
             type="button"
@@ -217,7 +151,7 @@ const ImageUploadPreview = ({ image, onImageChange, onRemove }: ImageUploadProps
           </button>
           <div className="relative h-48 w-full rounded-lg overflow-hidden">
             <Image
-              src={image}
+              src={preview}
               alt="Banner preview"
               fill
               className="object-cover"
@@ -242,8 +176,16 @@ const ImageUploadPreview = ({ image, onImageChange, onRemove }: ImageUploadProps
 
 // Main Component
 export default function CategoryManagement() {
-  const [categories, setCategories] = useState<Category[]>(DEMO_CATEGORIES);
-  const [filteredCategories, setFilteredCategories] = useState<Category[]>(DEMO_CATEGORIES);
+  // API Hooks
+  const { data: apiResponse, isLoading: isFetching, refetch } = useGetAllCategoryQuery({});
+  console.log("apiResponse", apiResponse)
+  const [createCategory, { isLoading: isCreating }] = useCreateCategoryMutation();
+  const [updateCategory, { isLoading: isUpdating }] = useUpdateCategoryMutation();
+  const [deleteCategory, { isLoading: isDeleting }] = useDeleteCategoryMutation();
+
+  // Local State
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -254,13 +196,21 @@ export default function CategoryManagement() {
   // Form states
   const [formData, setFormData] = useState({
     name: '',
-    coins: '',
-    slug: '',
+    Reward: '',
+    categorySlug: '',
     description: '',
-    bannerImage: ''
+    battleCost: '',
+    image: null as File | null
   });
 
   const itemsPerPage = 7;
+
+  // Update categories when API data changes
+  useEffect(() => {
+    if (apiResponse?.data) {
+      setCategories(apiResponse.data);
+    }
+  }, [apiResponse]);
 
   // Filter categories
   useEffect(() => {
@@ -284,19 +234,37 @@ export default function CategoryManagement() {
     setSearchQuery(e.target.value);
   };
 
-  const handleToggleVoting = (categoryId: string) => {
-    setCategories(categories.map(cat =>
-      cat._id === categoryId ? { ...cat, votingActive: !cat.votingActive } : cat
-    ));
+  const handleToggleVoting = async (categoryId: string) => {
+    const category = categories.find(cat => cat._id === categoryId);
+    if (!category) return;
+
+    try {
+      // Create FormData for the update
+      const formDataToSend = new FormData();
+      formDataToSend.append('data', JSON.stringify({
+        name: category.name,
+        description: category.description,
+        Reward: category.Reward,
+        battleCost: category.battleCost,
+        voteStatus: !category.voteStatus
+      }));
+
+      await updateCategory({ id: categoryId, data: formDataToSend }).unwrap();
+      refetch();
+    } catch (error) {
+      console.error('Failed to update voting status:', error);
+      alert('Failed to update voting status');
+    }
   };
 
   const handleAddCategory = () => {
     setFormData({
       name: '',
-      coins: '',
-      slug: '',
+      Reward: '',
+      categorySlug: '',
       description: '',
-      bannerImage: ''
+      battleCost: '',
+      image: null
     });
     setShowAddModal(true);
   };
@@ -305,10 +273,11 @@ export default function CategoryManagement() {
     setSelectedCategory(category);
     setFormData({
       name: category.name,
-      coins: category.coins.toString(),
-      slug: category.slug,
+      Reward: category.Reward.toString(),
+      categorySlug: category.categorySlug,
       description: category.description,
-      bannerImage: category.bannerImage
+      battleCost: category.battleCost.toString(),
+      image: category.image
     });
     setShowEditModal(true);
   };
@@ -318,57 +287,88 @@ export default function CategoryManagement() {
     setShowDeleteModal(true);
   };
 
-  const handleFormChange = (field: string, value: string) => {
+  const handleFormChange = (field: string, value: string | File) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmitAdd = () => {
-    if (!formData.name || !formData.slug) {
+  const handleSubmitAdd = async () => {
+    if (!formData.name || !formData.categorySlug || !formData.image) {
+      alert('Please fill in all required fields including image');
+      return;
+    }
+
+    try {
+      const formDataToSend = new FormData();
+
+      // Append the JSON data as a string
+      formDataToSend.append('data', JSON.stringify({
+        name: formData.name,
+        description: formData.description,
+        Reward: parseInt(formData.Reward) || 0,
+        battleCost: parseInt(formData.battleCost) || 0
+      }));
+
+      // Append the image file
+      if (formData.image instanceof File) {
+        formDataToSend.append('image', formData.image);
+      }
+
+      await createCategory(formDataToSend).unwrap();
+      setShowAddModal(false);
+      refetch();
+      alert('Category created successfully!');
+    } catch (error) {
+      console.error('Failed to create category:', error);
+      alert('Failed to create category');
+    }
+  };
+
+  const handleSubmitEdit = async () => {
+    if (!selectedCategory) return;
+
+    if (!formData.name || !formData.categorySlug) {
       alert('Please fill in all required fields');
       return;
     }
 
-    const newCategory: Category = {
-      _id: (categories.length + 1).toString(),
-      name: formData.name,
-      totalCars: 0,
-      votingActive: false,
-      coins: parseInt(formData.coins) || 0,
-      slug: formData.slug,
-      description: formData.description,
-      bannerImage: formData.bannerImage || "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1200&h=400&fit=crop"
-    };
-    setCategories([...categories, newCategory]);
-    setShowAddModal(false);
-  };
+    try {
+      const formDataToSend = new FormData();
 
-  const handleSubmitEdit = () => {
-    if (!selectedCategory) return;
+      // Append the JSON data as a string
+      formDataToSend.append('data', JSON.stringify({
+        name: formData.name,
+        description: formData.description,
+        Reward: parseInt(formData.Reward) || 0,
+        battleCost: parseInt(formData.battleCost) || 0
+      }));
 
-    if (!formData.name || !formData.slug) {
-      alert('Please fill in all required fields');
-      return;
+      // Append the image file only if it's a new file
+      if (formData.image instanceof File) {
+        formDataToSend.append('image', formData.image);
+      }
+
+      await updateCategory({ id: selectedCategory._id, data: formDataToSend }).unwrap();
+      setShowEditModal(false);
+      refetch();
+      alert('Category updated successfully!');
+    } catch (error) {
+      console.error('Failed to update category:', error);
+      alert('Failed to update category');
     }
-
-    setCategories(categories.map(cat =>
-      cat._id === selectedCategory._id
-        ? {
-          ...cat,
-          name: formData.name,
-          coins: parseInt(formData.coins) || 0,
-          slug: formData.slug,
-          description: formData.description,
-          bannerImage: formData.bannerImage || cat.bannerImage
-        }
-        : cat
-    ));
-    setShowEditModal(false);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!selectedCategory) return;
-    setCategories(categories.filter(cat => cat._id !== selectedCategory._id));
-    setShowDeleteModal(false);
+
+    try {
+      const response = await deleteCategory({ id: selectedCategory._id }).unwrap();
+      setShowDeleteModal(false);
+      refetch();
+      toast.success(response.message || "Category deleted successfully!")
+    } catch (error) {
+      console.error('Failed to delete category:', error);
+      toast.error(error?.message || "Failed to delete category");
+    }
   };
 
   // Pagination handlers
@@ -399,6 +399,14 @@ export default function CategoryManagement() {
     }
     return pages;
   };
+
+  if (isFetching) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-white text-lg">Loading categories...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="">
@@ -433,7 +441,7 @@ export default function CategoryManagement() {
           className="bg-blue-600 hover:bg-blue-700 text-white h-12 px-6 rounded-lg flex items-center gap-2"
         >
           <Plus size={20} />
-          Add New Categoric
+          Add New Category
         </Button>
       </div>
 
@@ -448,38 +456,44 @@ export default function CategoryManagement() {
         </div>
 
         {/* Rows */}
-        {currentCategories.map((category) => (
-          <div
-            key={category._id}
-            className="bg-[#1C2936] hover:bg-[#2a4470] border-b border-gray-700 px-6 py-4 grid grid-cols-4 gap-4 items-center transition-colors"
-          >
-            <div className="text-white text-sm font-medium">{category.name}</div>
-            <div className="text-gray-300 text-sm">{category.totalCars}</div>
-            <div>
-              <Switch
-                checked={category.votingActive}
-                onCheckedChange={() => handleToggleVoting(category._id)}
-                className="data-[state=checked]:bg-blue-600 cursor-pointer"
-              />
+        {currentCategories.length > 0 ? (
+          currentCategories.map((category) => (
+            <div
+              key={category._id}
+              className="bg-[#1C2936] hover:bg-[#2a4470] border-b border-gray-700 px-6 py-4 grid grid-cols-4 gap-4 items-center transition-colors"
+            >
+              <div className="text-white text-sm font-medium">{category.name}</div>
+              <div className="text-gray-300 text-sm">{category.totalCar}</div>
+              <div>
+                <Switch
+                  checked={category.voteStatus}
+                  onCheckedChange={() => handleToggleVoting(category._id)}
+                  className="data-[state=checked]:bg-blue-600 cursor-pointer"
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEditCategory(category)}
+                  className="p-2 bg-green-600/20 hover:bg-green-600/30 rounded-lg transition-colors cursor-pointer"
+                  title="Edit"
+                >
+                  <Pencil size={18} className="text-green-400" />
+                </button>
+                <button
+                  onClick={() => handleDeleteCategory(category)}
+                  className="p-2 bg-red-600/20 hover:bg-red-600/30 rounded-lg transition-colors cursor-pointer"
+                  title="Delete"
+                >
+                  <Trash2 size={18} className="text-red-400" />
+                </button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleEditCategory(category)}
-                className="p-2 bg-green-600/20 hover:bg-green-600/30 rounded-lg transition-colors cursor-pointer"
-                title="Edit"
-              >
-                <Pencil size={18} className="text-green-400" />
-              </button>
-              <button
-                onClick={() => handleDeleteCategory(category)}
-                className="p-2 bg-red-600/20 hover:bg-red-600/30 rounded-lg transition-colors cursor-pointer"
-                title="Delete"
-              >
-                <Trash2 size={18} className="text-red-400" />
-              </button>
-            </div>
+          ))
+        ) : (
+          <div className="bg-[#1C2936] px-6 py-12 text-center">
+            <p className="text-gray-400">No categories found</p>
           </div>
-        ))}
+        )}
 
         {/* Pagination */}
         {filteredCategories.length > 0 && (
@@ -545,9 +559,9 @@ export default function CategoryManagement() {
           {/* Basic Information */}
           <div className="mb-6">
             <h3 className="text-white font-medium mb-4">Basic Information</h3>
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <Label className="text-gray-300 mb-2 block text-sm">Category Name</Label>
+                <Label className="text-gray-300 mb-2 block text-sm">Category Name *</Label>
                 <Input
                   placeholder="e.g., Electric Supercars"
                   value={formData.name}
@@ -556,21 +570,22 @@ export default function CategoryManagement() {
                 />
               </div>
               <div>
-                <Label className="text-gray-300 mb-2 block text-sm">Coins</Label>
+                <Label className="text-gray-300 mb-2 block text-sm">Reward</Label>
                 <Input
-                  placeholder="100"
+                  placeholder="59"
                   type="number"
-                  value={formData.coins}
-                  onChange={(e) => handleFormChange('coins', e.target.value)}
+                  value={formData.Reward}
+                  onChange={(e) => handleFormChange('Reward', e.target.value)}
                   className="bg-[#1C2936] border-gray-700 text-white placeholder-gray-500 h-11"
                 />
               </div>
               <div>
-                <Label className="text-gray-300 mb-2 block text-sm">Category Slug</Label>
+                <Label className="text-gray-300 mb-2 block text-sm">Battle Cost</Label>
                 <Input
-                  placeholder="electric-supercars"
-                  value={formData.slug}
-                  onChange={(e) => handleFormChange('slug', e.target.value)}
+                  placeholder="300"
+                  type="number"
+                  value={formData.battleCost}
+                  onChange={(e) => handleFormChange('battleCost', e.target.value)}
                   className="bg-[#1C2936] border-gray-700 text-white placeholder-gray-500 h-11"
                 />
               </div>
@@ -589,11 +604,11 @@ export default function CategoryManagement() {
 
           {/* Featured Banner */}
           <div className="mb-6">
-            <Label className="text-gray-300 mb-2 block text-sm">Featured Banner</Label>
+            <Label className="text-gray-300 mb-2 block text-sm">Featured Banner *</Label>
             <ImageUploadPreview
-              image={formData.bannerImage}
-              onImageChange={(image) => handleFormChange('bannerImage', image)}
-              onRemove={() => handleFormChange('bannerImage', '')}
+              image={formData.image}
+              onImageChange={(image) => handleFormChange('image', image as File)}
+              onRemove={() => handleFormChange('image', null as any)}
             />
           </div>
 
@@ -602,15 +617,23 @@ export default function CategoryManagement() {
             <Button
               onClick={() => setShowAddModal(false)}
               className="bg-transparent hover:bg-red-600/10 text-red-400 border border-red-600/50 h-11 px-6 rounded-lg"
+              disabled={isCreating}
             >
               Cancel
             </Button>
             <Button
               onClick={handleSubmitAdd}
               className="bg-blue-600 hover:bg-blue-700 text-white h-11 px-6 rounded-lg flex items-center gap-2"
+              disabled={isCreating}
             >
-              <Plus size={18} />
-              Add Categoric
+              {isCreating ? (
+                <>Processing...</>
+              ) : (
+                <>
+                  <Plus size={18} />
+                  Add Category
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -635,9 +658,9 @@ export default function CategoryManagement() {
           {/* Basic Information */}
           <div className="mb-6">
             <h3 className="text-white font-medium mb-4">Basic Information</h3>
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <Label className="text-gray-300 mb-2 block text-sm">Category Name</Label>
+                <Label className="text-gray-300 mb-2 block text-sm">Category Name *</Label>
                 <Input
                   placeholder="e.g., Electric Supercars"
                   value={formData.name}
@@ -646,12 +669,22 @@ export default function CategoryManagement() {
                 />
               </div>
               <div>
-                <Label className="text-gray-300 mb-2 block text-sm">Coins</Label>
+                <Label className="text-gray-300 mb-2 block text-sm">Reward</Label>
                 <Input
-                  placeholder="100"
+                  placeholder="59"
                   type="number"
-                  value={formData.coins}
-                  onChange={(e) => handleFormChange('coins', e.target.value)}
+                  value={formData.Reward}
+                  onChange={(e) => handleFormChange('Reward', e.target.value)}
+                  className="bg-[#1C2936] border-gray-700 text-white placeholder-gray-500 h-11"
+                />
+              </div>
+              <div>
+                <Label className="text-gray-300 mb-2 block text-sm">Battle Cost</Label>
+                <Input
+                  placeholder="300"
+                  type="number"
+                  value={formData.battleCost}
+                  onChange={(e) => handleFormChange('battleCost', e.target.value)}
                   className="bg-[#1C2936] border-gray-700 text-white placeholder-gray-500 h-11"
                 />
               </div>
@@ -659,9 +692,9 @@ export default function CategoryManagement() {
                 <Label className="text-gray-300 mb-2 block text-sm">Category Slug</Label>
                 <Input
                   placeholder="electric-supercars"
-                  value={formData.slug}
-                  onChange={(e) => handleFormChange('slug', e.target.value)}
-                  className="bg-[#1C2936] border-gray-700 text-white placeholder-gray-500 h-11"
+                  value={formData.categorySlug}
+                  disabled
+                  className="bg-[#1C2936] border-gray-700 text-gray-500 placeholder-gray-500 h-11"
                 />
               </div>
             </div>
@@ -681,9 +714,9 @@ export default function CategoryManagement() {
           <div className="mb-6">
             <Label className="text-gray-300 mb-2 block text-sm">Featured Banner</Label>
             <ImageUploadPreview
-              image={formData.bannerImage}
-              onImageChange={(image) => handleFormChange('bannerImage', image)}
-              onRemove={() => handleFormChange('bannerImage', '')}
+              image={formData.image}
+              onImageChange={(image) => handleFormChange('image', image as File)}
+              onRemove={() => handleFormChange('image', null as any)}
             />
           </div>
 
@@ -692,15 +725,23 @@ export default function CategoryManagement() {
             <Button
               onClick={() => setShowEditModal(false)}
               className="bg-transparent hover:bg-red-600/10 text-red-400 border border-red-600/50 h-11 px-6 rounded-lg"
+              disabled={isUpdating}
             >
               Cancel
             </Button>
             <Button
               onClick={handleSubmitEdit}
               className="bg-blue-600 hover:bg-blue-700 text-white h-11 px-6 rounded-lg flex items-center gap-2"
+              disabled={isUpdating}
             >
-              <Pencil size={18} />
-              Update Category
+              {isUpdating ? (
+                <>Processing...</>
+              ) : (
+                <>
+                  <Pencil size={18} />
+                  Update Category
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -723,12 +764,14 @@ export default function CategoryManagement() {
             <Button
               onClick={handleConfirmDelete}
               className="w-full bg-red-600 hover:bg-red-700 text-white h-11 rounded-lg font-medium"
+              disabled={isDeleting}
             >
-              Yes, Delete Category
+              {isDeleting ? 'Deleting...' : 'Yes, Delete Category'}
             </Button>
             <Button
               onClick={() => setShowDeleteModal(false)}
               className="w-full bg-transparent hover:bg-gray-700/50 text-gray-300 border border-gray-600 h-11 rounded-lg font-medium"
+              disabled={isDeleting}
             >
               Cancel
             </Button>

@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "humayon5002.binarybards.online",
+        hostname: "ismail4001.binarybards.online",
         pathname: "/**",
       },
       {

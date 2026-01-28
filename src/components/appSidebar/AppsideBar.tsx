@@ -54,7 +54,7 @@ const sidebars: SidebarItem[] = [
     icon: Zap,
     subItems: [
       { name: "View Rankings", path: "/rankings/live-ranking", icon: LayoutDashboard },
-      { name: "Manage Voting", path: "/rankings/vote-history", icon: ClipboardList },
+      // { name: "Manage Voting", path: "/rankings/vote-history", icon: ClipboardList },
     ]
   },
   {

@@ -235,14 +235,16 @@ const TipTapEditor = ({
     },
   });
 
-  // Minimal useEffect for initialization only
+  // Handle content updates from props (e.g., async data loading)
   useEffect(() => {
-    if (editor && !editorInitialized.current) {
-      // Initial setup only
-      if (localDescription) {
+    if (editor && localDescription) {
+      const currentContent = editor.getHTML();
+      // Update if editor is empty (initial load or async data) 
+      // or if content is different but we want to be careful not to overwrite user typing.
+      // Ideally, only set if empty to support the "loading default value" case safely.
+      if (currentContent === '<p></p>' || currentContent === '') {
         editor.commands.setContent(localDescription);
       }
-      editorInitialized.current = true;
     }
   }, [editor, localDescription]);
 

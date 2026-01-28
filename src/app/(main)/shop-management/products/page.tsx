@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { useAllShopQuery, useUpdateStatusMutation } from '@/features/shop/shopApi';
 import {
   AlertCircle,
   Package,
@@ -14,121 +15,26 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { baseURL } from '../../../../utils/BaseURL';
 
-// Category Interface
-interface Category {
+// Product Interface matching API Response
+interface Product {
   _id: string;
   itemName: string;
-  category: string;
+  itemDescription: string;
   pointCost: number;
-  status: boolean;
+  discountCost: number;
   image: string;
+  categoryType: string;
+  userType: string;
+  totalItem: number;
+  volume: string;
+  formula: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 }
-
-// Demo Data
-const DEMO_CATEGORIES: Category[] = [
-  {
-    _id: "1",
-    itemName: "Vintage Mustang Badge",
-    category: "Badges",
-    pointCost: 1200,
-    status: true,
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop"
-  },
-  {
-    _id: "2",
-    itemName: "Vintage Mustang Badge",
-    category: "Badges",
-    pointCost: 1200,
-    status: false,
-    image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=80&h=80&fit=crop"
-  },
-  {
-    _id: "3",
-    itemName: "Vintage Mustang Badge",
-    category: "Badges",
-    pointCost: 1200,
-    status: true,
-    image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=80&h=80&fit=crop"
-  },
-  {
-    _id: "4",
-    itemName: "Vintage Mustang Badge",
-    category: "Badges",
-    pointCost: 1200,
-    status: true,
-    image: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=80&h=80&fit=crop"
-  },
-  {
-    _id: "5",
-    itemName: "Vintage Mustang Badge",
-    category: "Badges",
-    pointCost: 1200,
-    status: true,
-    image: "https://images.unsplash.com/photo-1542362567-b07e54358753?w=80&h=80&fit=crop"
-  },
-  {
-    _id: "6",
-    itemName: "Vintage Mustang Badge",
-    category: "Badges",
-    pointCost: 1200,
-    status: false,
-    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=80&h=80&fit=crop"
-  },
-  {
-    _id: "7",
-    itemName: "Vintage Mustang Badge",
-    category: "Badges",
-    pointCost: 1200,
-    status: true,
-    image: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=80&h=80&fit=crop"
-  },
-  {
-    _id: "8",
-    itemName: "Vintage Mustang Badge",
-    category: "Badges",
-    pointCost: 1200,
-    status: true,
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop"
-  },
-  {
-    _id: "9",
-    itemName: "Vintage Mustang Badge",
-    category: "Badges",
-    pointCost: 1200,
-    status: true,
-    image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=80&h=80&fit=crop"
-  }
-];
-
-// Stats Data
-const statsData = [
-  {
-    id: 1,
-    icon: Package,
-    title: "Total Items",
-    value: "780",
-    valueColor: "text-blue-400",
-    bgColor: "bg-[#1C2936]"
-  },
-  {
-    id: 2,
-    icon: Trophy,
-    title: "Active Rewards",
-    value: "98",
-    valueColor: "text-blue-400",
-    bgColor: "bg-[#1C2936]"
-  },
-  {
-    id: 3,
-    icon: AlertCircle,
-    title: "Out of Stock",
-    value: "5",
-    valueColor: "text-red-400",
-    bgColor: "bg-[#1C2936]"
-  }
-];
-
 
 interface StatsCardProps {
   icon: any;
@@ -137,10 +43,6 @@ interface StatsCardProps {
   valueColor: string;
   bgColor: string;
 }
-
-
-
-
 
 // Stats Card Component
 const StatsCard = ({ icon: Icon, title, value, valueColor, bgColor }: StatsCardProps) => {
@@ -163,42 +65,89 @@ const StatsCard = ({ icon: Icon, title, value, valueColor, bgColor }: StatsCardP
 
 // Main Component
 export default function CategoryManagement() {
-  const [categories, setCategories] = useState<Category[]>(DEMO_CATEGORIES);
-  const [filteredCategories, setFilteredCategories] = useState<Category[]>(DEMO_CATEGORIES);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [showAddModal, setShowAddModal] = useState(false);
   const router = useRouter();
 
+  const { data: shopData, isLoading: isShopLoading, refetch } = useAllShopQuery({});
+  const [updateStatus] = useUpdateStatusMutation();
+
   const itemsPerPage = 7;
 
-  // Filter categories
+  // Sync data from API
   useEffect(() => {
-    const filtered = categories.filter(category => {
+    if (shopData?.data?.data) {
+      setProducts(shopData.data.data);
+      setFilteredProducts(shopData.data.data);
+    }
+  }, [shopData]);
+
+  // Filter products
+  useEffect(() => {
+    if (!products) return;
+    const filtered = products.filter(product => {
       const searchLower = searchQuery.toLowerCase();
-      return category.itemName.toLowerCase().includes(searchLower) ||
-        category.category.toLowerCase().includes(searchLower);
+      return (
+        product.itemName.toLowerCase().includes(searchLower) ||
+        product.categoryType?.toLowerCase().includes(searchLower)
+      );
     });
 
-    setFilteredCategories(filtered);
+    setFilteredProducts(filtered);
     setCurrentPage(1);
-  }, [categories, searchQuery]);
+  }, [products, searchQuery]);
+
+  // Stats Data calculated from API response
+  const statsData = [
+    {
+      id: 1,
+      icon: Package,
+      title: "Total Items",
+      value: shopData?.data?.AllItemsLength?.toString() || "0",
+      valueColor: "text-blue-400",
+      bgColor: "bg-[#1C2936]"
+    },
+    {
+      id: 2,
+      icon: Trophy,
+      title: "Active Rewards",
+      value: shopData?.data?.avtiveItemsLength?.toString() || "0",
+      valueColor: "text-blue-400",
+      bgColor: "bg-[#1C2936]"
+    },
+    {
+      id: 3,
+      icon: AlertCircle,
+      title: "Inactive Items",
+      value: shopData?.data?.inactiveItemsLength?.toString() || "0",
+      valueColor: "text-red-400",
+      bgColor: "bg-[#1C2936]"
+    }
+  ];
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentCategories = filteredCategories.slice(startIndex, endIndex);
+  const currentProducts = filteredProducts.slice(startIndex, endIndex);
 
   // Handlers
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
 
-  const handleToggleStatus = (categoryId: string) => {
-    setCategories(categories.map(cat =>
-      cat._id === categoryId ? { ...cat, status: !cat.status } : cat
-    ));
+  const handleToggleStatus = async (productId: string) => {
+    try {
+      await updateStatus(productId).unwrap();
+      toast.success("Status updated successfully");
+      refetch(); // Refresh list to get updated status
+    } catch (error) {
+      console.error("Failed to update status", error);
+      toast.error("Failed to update status");
+    }
   };
 
   const handleAddCategory = () => {
@@ -241,7 +190,7 @@ export default function CategoryManagement() {
           <div className="w-full md:w-96 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
             <Input
-              placeholder="Screen here"
+              placeholder="Search products..."
               value={searchQuery}
               onChange={handleSearchChange}
               className="pl-10 h-12 bg-[#1C2936] border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
@@ -257,54 +206,63 @@ export default function CategoryManagement() {
           </Button>
         </div>
 
-        {/* Categories Table */}
+        {/* Products Table */}
         <div className="rounded-xl overflow-hidden">
           {/* Header */}
-          <div className="bg-[#1C2936] px-6 py-4 grid grid-cols-3 gap-4 text-sm font-medium text-gray-300">
+          <div className="bg-[#1C2936] px-6 py-4 grid grid-cols-4 gap-4 text-sm font-medium text-gray-300">
             <div>Item Name</div>
             <div>Point Cost</div>
             <div>Status</div>
+            <div>Actions</div>
           </div>
 
           {/* Rows */}
-          <div className="bg-[#1C2936]">
-            {currentCategories.map((category, index) => (
-              <div
-                key={category._id}
-                className={`hover:bg-[#1C2936] px-6 py-4 grid grid-cols-3 gap-4 items-center transition-colors ${index !== currentCategories.length - 1 ? 'border-b border-gray-700/50' : ''
-                  }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12 rounded-lg">
-                    <AvatarImage
-                      src={category.image}
-                      alt={category.itemName}
-                      className="rounded-lg object-cover"
-                    />
-                  </Avatar>
+          {isShopLoading ? (
+            <div className="bg-[#1C2936] p-8 text-center text-gray-400">Loading products...</div>
+          ) : currentProducts.length === 0 ? (
+            <div className="bg-[#1C2936] p-8 text-center text-gray-400">No products found</div>
+          ) : (
+            <div className="bg-[#1C2936]">
+              {currentProducts.map((product, index) => (
+                <div
+                  key={product._id}
+                  className={`hover:bg-[#233142] px-6 py-4 grid grid-cols-4 gap-4 items-center transition-colors ${index !== currentProducts.length - 1 ? 'border-b border-gray-700/50' : ''
+                    }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-12 w-12 rounded-lg">
+                      <AvatarImage
+                        src={baseURL + product.image}
+                        alt={product.itemName}
+                        className="rounded-lg object-cover"
+                      />
+                    </Avatar>
+                    <div>
+                      <div className="text-white text-sm font-medium">{product.itemName}</div>
+                      <div className="text-gray-400 text-xs">Category: {product.categoryType}</div>
+                    </div>
+                  </div>
+
+                  <div className="text-white text-sm font-medium">{product.pointCost}</div>
+                  <div className="text-white text-sm font-medium">{product.status}</div>
+
                   <div>
-                    <div className="text-white text-sm font-medium">{category.itemName}</div>
-                    <div className="text-gray-400 text-xs">Category: {category.category}</div>
+                    <Switch
+                      checked={product.status === 'Active'}
+                      onCheckedChange={() => handleToggleStatus(product._id)}
+                      className="data-[state=checked]:bg-blue-600 cursor-pointer"
+                    />
                   </div>
                 </div>
+              ))}
+            </div>
+          )}
 
-                <div className="text-white text-sm font-medium">{category.pointCost}</div>
-
-                <div>
-                  <Switch
-                    checked={category.status}
-                    onCheckedChange={() => handleToggleStatus(category._id)}
-                    className="data-[state=checked]:bg-blue-600"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
           {/* Pagination */}
-          {filteredCategories.length > 0 && (
+          {filteredProducts.length > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#1a2942] px-6 py-4 border-t border-gray-700/50">
               <div className="text-sm text-gray-400">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredCategories.length)} of {filteredCategories.length} Category
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)} of {filteredProducts.length} Products
               </div>
 
               <div className="flex items-center gap-2">

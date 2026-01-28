@@ -11,80 +11,37 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertTriangle, Check, Eye, Filter, Search, X } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { useApproveCarMutation, useGetAllCarQuery } from '../../../../features/car/carApi';
+import { baseURL } from '../../../../utils/BaseURL';
 
-// Car Interface
+// Car Interface based on API response
 interface Car {
   _id: string;
-  image: string;
-  ownerName: string;
-  ownerProfile: string;
-  ownerMemberSince: string;
-  date: string;
-  make: string;
-  model: string;
+  images: string[];
+  userId: {
+    _id: string;
+    name: string;
+  };
+  manufacturer: string;
   year: string;
-  caseNumber: string;
-  submittedTime: string;
-  thumbnails: string[];
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  modelName: string;
+  categoryName: string;
+  battleCost: number;
+  Reward: number;
+  ranking: number;
+  votes: number;
+  Top: number;
+  createdAt: string;
+  updatedAt: string;
+  category?: {
+    _id: string;
+    name: string;
+    battleCost: number;
+    Reward: number;
+  };
+  description?: string;
 }
-
-// Demo Data
-const DEMO_CARS: Car[] = [
-  {
-    _id: "1",
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&h=400&fit=crop",
-    ownerName: "Jane Cooper",
-    ownerProfile: "/profiles/jane.jpg",
-    ownerMemberSince: "May 2020",
-    date: "October 24, 2025",
-    make: "Ford",
-    model: "Mustang 2022",
-    year: "2022",
-    caseNumber: "8829",
-    submittedTime: "2 hours ago",
-    thumbnails: [
-      "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&h=300&fit=crop",
-      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=300&fit=crop",
-      "https://images.unsplash.com/photo-1542362567-b07e54358753?w=400&h=300&fit=crop"
-    ]
-  },
-  {
-    _id: "2",
-    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&h=400&fit=crop",
-    ownerName: "John Doe",
-    ownerProfile: "/profiles/john.jpg",
-    ownerMemberSince: "June 2021",
-    date: "October 25, 2025",
-    make: "Tesla",
-    model: "Model S",
-    year: "2023",
-    caseNumber: "8830",
-    submittedTime: "3 hours ago",
-    thumbnails: [
-      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=300&fit=crop",
-      "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&h=300&fit=crop",
-      "https://images.unsplash.com/photo-1566470469039-6d61f50a05e0?w=400&h=300&fit=crop"
-    ]
-  },
-  {
-    _id: "3",
-    image: "https://images.unsplash.com/photo-1566470469039-6d61f50a05e0?w=600&h=400&fit=crop",
-    ownerName: "Robert Johnson",
-    ownerProfile: "/profiles/robert.jpg",
-    ownerMemberSince: "March 2019",
-    date: "October 26, 2025",
-    make: "Chevrolet",
-    model: "Corvette Stingray",
-    year: "2024",
-    caseNumber: "8831",
-    submittedTime: "5 hours ago",
-    thumbnails: [
-      "https://images.unsplash.com/photo-1566470469039-6d61f50a05e0?w=400&h=300&fit=crop",
-      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=300&fit=crop",
-      "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&h=300&fit=crop"
-    ]
-  }
-];
 
 // Modal Components
 interface ModalProps {
@@ -111,8 +68,8 @@ const Modal = ({ open, onOpenChange, children }: ModalProps) => {
 
 // Main Component
 export default function CarManagement() {
-  const [cars] = useState<Car[]>(DEMO_CARS);
-  const [filteredCars, setFilteredCars] = useState<Car[]>(DEMO_CARS);
+  const [cars, setCars] = useState<Car[]>([]);
+  const [filteredCars, setFilteredCars] = useState<Car[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
@@ -121,17 +78,39 @@ export default function CarManagement() {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [mainImage, setMainImage] = useState<string>('');
 
+  const [loading, setLoading] = useState(true);
+
+  // API hooks
+  const { data: apiData, isLoading: carsLoading, refetch } = useGetAllCarQuery({});
+  const [approveCar, { isLoading: approveLoading }] = useApproveCarMutation();
+
   const itemsPerPage = 7;
 
-  // Filter cars
+  // Fetch cars from API
   useEffect(() => {
+    if (apiData?.success && apiData.data) {
+      setCars(apiData.data);
+      setFilteredCars(apiData.data);
+      setLoading(false);
+    }
+  }, [apiData]);
+
+  // Filter cars based on search
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredCars(cars);
+      setCurrentPage(1);
+      return;
+    }
+
     const filtered = cars.filter(car => {
       const searchLower = searchQuery.toLowerCase();
       return (
-        car.ownerName.toLowerCase().includes(searchLower) ||
-        car.make.toLowerCase().includes(searchLower) ||
-        car.model.toLowerCase().includes(searchLower) ||
-        car.date.toLowerCase().includes(searchLower)
+        car.userId.name.toLowerCase().includes(searchLower) ||
+        car.manufacturer.toLowerCase().includes(searchLower) ||
+        car.modelName.toLowerCase().includes(searchLower) ||
+        car.year.toLowerCase().includes(searchLower) ||
+        car.status.toLowerCase().includes(searchLower)
       );
     });
 
@@ -152,7 +131,9 @@ export default function CarManagement() {
 
   const handleViewDetails = (car: Car) => {
     setSelectedCar(car);
-    setMainImage(car.image); // Set initial main image
+    if (car.images && car.images.length > 0) {
+      setMainImage(car.images[0]); // Set initial main image
+    }
     setShowDetailsModal(true);
   };
 
@@ -168,15 +149,71 @@ export default function CarManagement() {
     setShowRejectModal(true);
   };
 
-  const handleConfirmApprove = () => {
-    console.log('Car approved:', selectedCar);
+  const handleConfirmApprove = async () => {
+    if (!selectedCar) return;
+
+    try {
+      const response = await approveCar({
+        carId: selectedCar._id,
+        action: 'APPROVE'
+      }).unwrap();
+
+      if (response.success) {
+        // Update local state
+        setCars(prevCars =>
+          prevCars.map(car =>
+            car._id === selectedCar._id
+              ? { ...car, status: 'APPROVED' }
+              : car
+          )
+        );
+
+        // Show success message (you can add a toast notification here)
+        console.log('Car approved successfully');
+
+        // Refetch data to ensure consistency
+        refetch();
+      }
+    } catch (error) {
+      console.error('Failed to approve car:', error);
+      // Handle error (show error toast)
+    }
+
     setShowApproveModal(false);
     setSelectedCar(null);
     setMainImage('');
   };
 
-  const handleConfirmReject = () => {
-    console.log('Car rejected:', selectedCar);
+  const handleConfirmReject = async () => {
+    if (!selectedCar) return;
+
+    try {
+      const response = await approveCar({
+        carId: selectedCar._id,
+        action: 'REJECT'
+      }).unwrap();
+
+      if (response.success) {
+        // Update local state
+        setCars(prevCars =>
+          prevCars.map(car =>
+            car._id === selectedCar._id
+              ? { ...car, status: 'REJECTED' }
+              : car
+          )
+        );
+
+        // Show success message
+        console.log('Car rejected successfully');
+
+        // Refetch data to ensure consistency
+        refetch();
+      }
+    } catch (error) {
+      console.error('Failed to reject car:', error);
+      // Handle error
+    }
+
     setShowRejectModal(false);
     setSelectedCar(null);
     setMainImage('');
@@ -189,12 +226,11 @@ export default function CarManagement() {
 
   // Handle main image click to cycle through images
   const handleMainImageClick = () => {
-    if (!selectedCar) return;
+    if (!selectedCar || !selectedCar.images || selectedCar.images.length === 0) return;
 
-    const allImages = [selectedCar.image, ...selectedCar.thumbnails];
-    const currentIndex = allImages.indexOf(mainImage);
-    const nextIndex = (currentIndex + 1) % allImages.length;
-    setMainImage(allImages[nextIndex]);
+    const currentIndex = selectedCar.images.indexOf(mainImage);
+    const nextIndex = (currentIndex + 1) % selectedCar.images.length;
+    setMainImage(selectedCar.images[nextIndex]);
   };
 
   // Pagination handlers
@@ -226,6 +262,48 @@ export default function CarManagement() {
     return pages;
   };
 
+  // Format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  // Calculate time since submission
+  const getTimeSince = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+    if (diffHours < 1) {
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+      return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    } else {
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    }
+  };
+
+  // Check if approve button should be disabled
+  const isApproveDisabled = (car: Car) => car.status === 'APPROVED';
+
+  // Check if reject button should be disabled
+  const isRejectDisabled = (car: Car) => car.status === 'REJECTED';
+
+  if (loading || carsLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-white">Loading cars...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="">
       {/* Search and Filter */}
@@ -233,7 +311,7 @@ export default function CarManagement() {
         <div className="flex w-full md:w-5/12 relative">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
           <Input
-            placeholder="Screen here"
+            placeholder="Search by owner, manufacturer, model, or year"
             value={searchQuery}
             onChange={handleSearchChange}
             className="pl-12 h-12 bg-[#0d1829] border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
@@ -244,12 +322,13 @@ export default function CarManagement() {
           <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 z-10" size={20} />
           <Select onValueChange={() => { }}>
             <SelectTrigger className="w-full md:w-[200px] h-20 py-[23px] bg-[#0d1829] border-gray-700 text-white pl-12 rounded-lg cursor-pointer">
-              <SelectValue placeholder="Filter: 2025" />
+              <SelectValue placeholder="Filter: All Status" />
             </SelectTrigger>
             <SelectContent className='bg-[#1a2942] border-gray-700 text-white cursor-pointer'>
-              <SelectItem value="2025">2025</SelectItem>
-              <SelectItem value="2024">2024</SelectItem>
-              <SelectItem value="2023">2023</SelectItem>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="PENDING">Pending</SelectItem>
+              <SelectItem value="APPROVED">Approved</SelectItem>
+              <SelectItem value="REJECTED">Rejected</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -262,7 +341,7 @@ export default function CarManagement() {
           <div>Car Image</div>
           <div>Owner Name</div>
           <div>Date</div>
-          <div>Make</div>
+          <div>Manufacturer</div>
           <div>Model</div>
           <div>Action</div>
         </div>
@@ -270,7 +349,7 @@ export default function CarManagement() {
         {/* Rows */}
         {currentCars.length === 0 ? (
           <div className="bg-[#1C2936] py-12 text-center text-gray-500">
-            No records found matching your criteria
+            {cars.length === 0 ? 'No cars found' : 'No records found matching your criteria'}
           </div>
         ) : (
           currentCars.map((car) => (
@@ -280,17 +359,24 @@ export default function CarManagement() {
             >
               <div>
                 <Avatar className="h-16 w-20 rounded-lg">
-                  <AvatarImage src={car.image} alt={car.model} className="rounded-lg object-cover" />
-                  <AvatarFallback className="rounded-lg bg-gray-700 text-white">
-                    {car.make[0]}
-                  </AvatarFallback>
+                  {car.images && car.images.length > 0 ? (
+                    <AvatarImage
+                      src={baseURL + car.images[0]}
+                      alt={`${car.manufacturer} ${car.modelName}`}
+                      className="rounded-lg object-cover"
+                    />
+                  ) : (
+                    <AvatarFallback className="rounded-lg bg-gray-700 text-white">
+                      {car.manufacturer[0]}{car.modelName[0]}
+                    </AvatarFallback>
+                  )}
                 </Avatar>
               </div>
 
-              <div className="text-white text-sm font-medium">{car.ownerName}</div>
-              <div className="text-gray-300 text-sm">{car.date}</div>
-              <div className="text-gray-300 text-sm">{car.make}</div>
-              <div className="text-gray-300 text-sm">{car.model}</div>
+              <div className="text-white text-sm font-medium">{car.userId.name}</div>
+              <div className="text-gray-300 text-sm">{formatDate(car.createdAt)}</div>
+              <div className="text-gray-300 text-sm">{car.manufacturer}</div>
+              <div className="text-gray-300 text-sm">{car.modelName}</div>
 
               <div className="flex gap-2">
                 <button
@@ -302,17 +388,31 @@ export default function CarManagement() {
                 </button>
                 <button
                   onClick={() => handleApproveClick(car)}
-                  className="p-2 cursor-pointer bg-green-600/20 hover:bg-green-600/30 rounded-lg transition-colors"
-                  title="Approve"
+                  disabled={isApproveDisabled(car)}
+                  className={`p-2 cursor-pointer rounded-lg transition-colors ${isApproveDisabled(car)
+                    ? 'bg-gray-600/20 cursor-not-allowed opacity-50'
+                    : 'bg-green-600/20 hover:bg-green-600/30'
+                    }`}
+                  title={isApproveDisabled(car) ? "Already Approved" : "Approve"}
                 >
-                  <Check size={18} className="text-green-400" />
+                  <Check
+                    size={18}
+                    className={isApproveDisabled(car) ? "text-gray-400" : "text-green-400"}
+                  />
                 </button>
                 <button
                   onClick={() => handleRejectClick(car)}
-                  className="p-2 cursor-pointer bg-red-600/20 hover:bg-red-600/30 rounded-lg transition-colors"
-                  title="Reject"
+                  disabled={isRejectDisabled(car)}
+                  className={`p-2 cursor-pointer rounded-lg transition-colors ${isRejectDisabled(car)
+                    ? 'bg-gray-600/20 cursor-not-allowed opacity-50'
+                    : 'bg-red-600/20 hover:bg-red-600/30'
+                    }`}
+                  title={isRejectDisabled(car) ? "Already Rejected" : "Reject"}
                 >
-                  <X size={18} className="text-red-400" />
+                  <X
+                    size={18}
+                    className={isRejectDisabled(car) ? "text-gray-400" : "text-red-400"}
+                  />
                 </button>
               </div>
             </div>
@@ -371,100 +471,96 @@ export default function CarManagement() {
             {/* Left Side - Car Image */}
             <div className="w-1/2 bg-[#1a2942] p-6 flex flex-col">
               {/* Main Image */}
-              <div
-                className="relative h-[400px] rounded-xl overflow-hidden mb-4 cursor-pointer group"
-                onClick={handleMainImageClick}
-              >
-                <Image
-                  src={mainImage}
-                  alt={selectedCar.model}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-4">
-                  <div className="bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg text-xs text-white">
-                    Click to view next image
-                  </div>
-                </div>
-              </div>
-
-              {/* Image Counter */}
-              <div className="flex items-center justify-between mb-4 text-sm text-gray-400">
-                <span>Image {[selectedCar.image, ...selectedCar.thumbnails].indexOf(mainImage) + 1} of {selectedCar.thumbnails.length + 1}</span>
-                <div className="flex items-center gap-1">
-                  {[selectedCar.image, ...selectedCar.thumbnails].map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-2 h-2 rounded-full transition-all duration-200 ${[selectedCar.image, ...selectedCar.thumbnails].indexOf(mainImage) === index ? 'bg-cyan-400' : 'bg-gray-600'}`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Thumbnails */}
-              <div className="grid grid-cols-4 gap-3">
-                {/* Original Main Image Thumbnail */}
-                <div
-                  className={`relative h-24 rounded-lg overflow-hidden cursor-pointer transition-all duration-200 border-2 ${mainImage === selectedCar.image ? 'border-cyan-400' : 'border-transparent'}`}
-                  onClick={() => handleThumbnailClick(selectedCar.image)}
-                >
-                  <Image
-                    src={selectedCar.image}
-                    alt="Main image"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 25vw, 12.5vw"
-                  />
-                  {mainImage === selectedCar.image && (
-                    <div className="absolute inset-0 bg-cyan-400/20 flex items-center justify-center">
-                      <div className="w-6 h-6 bg-cyan-400 rounded-full flex items-center justify-center">
-                        <Check size={14} className="text-white" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Thumbnail Images */}
-                {selectedCar.thumbnails.map((thumb, index) => (
+              {selectedCar.images && selectedCar.images.length > 0 ? (
+                <>
                   <div
-                    key={index}
-                    className={`relative h-24 rounded-lg overflow-hidden cursor-pointer transition-all duration-200 border-2 ${mainImage === thumb ? 'border-cyan-400' : 'border-transparent'}`}
-                    onClick={() => handleThumbnailClick(thumb)}
+                    className="relative h-[400px] rounded-xl overflow-hidden mb-4 cursor-pointer group"
+                    onClick={handleMainImageClick}
                   >
                     <Image
-                      src={thumb}
-                      alt={`Thumbnail ${index + 1}`}
+                      src={baseURL + mainImage}
+                      alt={`${selectedCar.manufacturer} ${selectedCar.modelName}`}
                       fill
-                      className="object-cover hover:scale-110 transition-transform duration-200"
-                      sizes="(max-width: 768px) 25vw, 12.5vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      priority
                     />
-                    {mainImage === thumb && (
-                      <div className="absolute inset-0 bg-cyan-400/20 flex items-center justify-center">
-                        <div className="w-6 h-6 bg-cyan-400 rounded-full flex items-center justify-center">
-                          <Check size={14} className="text-white" />
-                        </div>
+                    <div className="absolute inset-0 bg-linear-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-4">
+                      <div className="bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg text-xs text-white">
+                        Click to view next image
                       </div>
-                    )}
-                    <div className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                      {index + 1}
                     </div>
                   </div>
-                ))}
-              </div>
 
-              {/* Navigation Tips */}
-              <div className="mt-4 text-center text-xs text-gray-500">
-                <p>Click on thumbnails to view full image • Click on main image for next</p>
-              </div>
+                  {/* Image Counter */}
+                  <div className="flex items-center justify-between mb-4 text-sm text-gray-400">
+                    <span>Image {selectedCar.images.indexOf(mainImage) + 1} of {selectedCar.images.length}</span>
+                    <div className="flex items-center gap-1">
+                      {selectedCar.images.map((_, index) => (
+                        <div
+                          key={index}
+                          className={`w-2 h-2 rounded-full transition-all duration-200 ${selectedCar.images.indexOf(mainImage) === index ? 'bg-cyan-400' : 'bg-gray-600'
+                            }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Thumbnails */}
+                  <div className="grid grid-cols-4 gap-3">
+                    {selectedCar.images.map((image, index) => (
+
+                      <div
+                        key={index}
+                        className={`relative h-24 rounded-lg overflow-hidden cursor-pointer transition-all duration-200 border-2 ${mainImage === image ? 'border-cyan-400' : 'border-transparent'
+                          }`}
+                        onClick={() => handleThumbnailClick(image)}
+                      >
+                        <img
+                          src={baseURL + image}
+                          alt={`${index + 1}`}
+                          // fill
+                          className="object-cover hover:scale-110 transition-transform duration-200"
+                          sizes="(max-width: 768px) 25vw, 12.5vw"
+                        />
+                        {mainImage === image && (
+                          <div className="absolute inset-0 bg-cyan-400/20 flex items-center justify-center">
+                            <div className="w-6 h-6 bg-cyan-400 rounded-full flex items-center justify-center">
+                              <Check size={14} className="text-white" />
+                            </div>
+                          </div>
+                        )}
+                        <div className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                          {index + 1}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Navigation Tips */}
+                  <div className="mt-4 text-center text-xs text-gray-500">
+                    <p>Click on thumbnails to view full image • Click on main image for next</p>
+                  </div>
+                </>
+              ) : (
+                <div className="h-[400px] flex items-center justify-center bg-gray-800 rounded-xl">
+                  <div className="text-gray-500">No images available</div>
+                </div>
+              )}
             </div>
 
             {/* Right Side - Details */}
             <div className="w-1/2 bg-[#0f1c2e] p-6 overflow-y-auto">
               <div className="mb-6">
-                <h3 className="text-sm text-gray-400 mb-1">Case #{selectedCar.caseNumber}</h3>
-                <p className="text-xs text-gray-500">Submitted {selectedCar.submittedTime}</p>
+                <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${selectedCar.status === 'APPROVED' ? 'bg-green-500/20 text-green-400' :
+                  selectedCar.status === 'REJECTED' ? 'bg-red-500/20 text-red-400' :
+                    'bg-yellow-500/20 text-yellow-400'
+                  }`}>
+                  {selectedCar.status}
+                </div>
+                <h3 className="text-sm text-gray-400 mt-2">Submitted {getTimeSince(selectedCar.createdAt)}</h3>
+                <p className="text-xs text-gray-500">Created: {formatDate(selectedCar.createdAt)}</p>
+                <p className="text-xs text-gray-500">Last Updated: {formatDate(selectedCar.updatedAt)}</p>
               </div>
 
               {/* Owner Information */}
@@ -472,14 +568,13 @@ export default function CarManagement() {
                 <h4 className="text-white font-medium mb-3">Owner Information</h4>
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12 rounded-full">
-                    <AvatarImage src={selectedCar.ownerProfile} alt={selectedCar.ownerName} />
                     <AvatarFallback className="bg-gray-700 text-white">
-                      {selectedCar.ownerName.split(' ').map(n => n[0]).join('')}
+                      {selectedCar.userId.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-white font-medium">{selectedCar.ownerName}</p>
-                    <p className="text-xs text-gray-400">Member since {selectedCar.ownerMemberSince}</p>
+                    <p className="text-white font-medium">{selectedCar.userId.name}</p>
+                    <p className="text-xs text-gray-400">User ID: {selectedCar.userId._id}</p>
                   </div>
                 </div>
               </div>
@@ -489,12 +584,53 @@ export default function CarManagement() {
                 <h4 className="text-white font-medium mb-4">Car Details</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs text-gray-400 mb-1">Make & Model</p>
-                    <p className="text-white font-medium">{selectedCar.make} {selectedCar.model}</p>
+                    <p className="text-xs text-gray-400 mb-1">Manufacturer</p>
+                    <p className="text-white font-medium">{selectedCar.manufacturer}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Model</p>
+                    <p className="text-white font-medium">{selectedCar.modelName}</p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-400 mb-1">Year</p>
                     <p className="text-white font-medium">{selectedCar.year}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Category</p>
+                    <p className="text-white font-medium">{selectedCar.categoryName}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Battle Cost</p>
+                    <p className="text-white font-medium">${selectedCar.battleCost}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Reward</p>
+                    <p className="text-white font-medium">${selectedCar.Reward}</p>
+                  </div>
+                </div>
+                {selectedCar.description && (
+                  <div className="mt-4">
+                    <p className="text-xs text-gray-400 mb-1">Description</p>
+                    <p className="text-white text-sm">{selectedCar.description}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Stats */}
+              <div className="bg-[#1a2942] rounded-xl p-4 mb-6 border border-gray-700">
+                <h4 className="text-white font-medium mb-4">Statistics</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Ranking</p>
+                    <p className="text-white font-medium">{selectedCar.ranking}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Votes</p>
+                    <p className="text-white font-medium">{selectedCar.votes}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Top</p>
+                    <p className="text-white font-medium">{selectedCar.Top}</p>
                   </div>
                 </div>
               </div>
@@ -503,15 +639,23 @@ export default function CarManagement() {
               <div className="space-y-3">
                 <Button
                   onClick={() => handleApproveClick(selectedCar)}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 rounded-lg font-medium"
+                  disabled={isApproveDisabled(selectedCar)}
+                  className={`w-full h-12 rounded-lg font-medium ${isApproveDisabled(selectedCar)
+                    ? 'bg-gray-600 cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    }`}
                 >
-                  Approve Car
+                  {isApproveDisabled(selectedCar) ? 'Already Approved' : 'Approve Car'}
                 </Button>
                 <Button
                   onClick={() => handleRejectClick(selectedCar)}
-                  className="w-full bg-transparent hover:bg-red-600/10 text-red-400 border border-red-600/50 h-12 rounded-lg font-medium"
+                  disabled={isRejectDisabled(selectedCar)}
+                  className={`w-full h-12 rounded-lg font-medium ${isRejectDisabled(selectedCar)
+                    ? 'bg-gray-600/20 cursor-not-allowed text-gray-400 border border-gray-600'
+                    : 'bg-transparent hover:bg-red-600/10 text-red-400 border border-red-600/50'
+                    }`}
                 >
-                  Cancel
+                  {isRejectDisabled(selectedCar) ? 'Already Rejected' : 'Reject Car'}
                 </Button>
               </div>
             </div>
@@ -528,19 +672,22 @@ export default function CarManagement() {
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">Approve This Car?</h3>
             <p className="text-gray-400 text-sm">
-              Are you sure you want to approve this car? This action will make the car visible to all users.
+              Are you sure you want to approve {selectedCar?.manufacturer} {selectedCar?.modelName}?
+              This action will make the car visible to all users.
             </p>
           </div>
 
           <div className="space-y-3">
             <Button
               onClick={handleConfirmApprove}
-              className="w-full bg-green-600 hover:bg-green-700 text-white h-11 rounded-lg font-medium"
+              disabled={approveLoading}
+              className="w-full bg-green-600 hover:bg-green-700 text-white h-11 rounded-lg font-medium disabled:opacity-50"
             >
-              Yes, Approve
+              {approveLoading ? 'Approving...' : 'Yes, Approve'}
             </Button>
             <Button
               onClick={() => setShowApproveModal(false)}
+              disabled={approveLoading}
               className="w-full bg-transparent hover:bg-gray-700/50 text-gray-300 border border-gray-600 h-11 rounded-lg font-medium"
             >
               Cancel
@@ -558,19 +705,22 @@ export default function CarManagement() {
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">Reject This Car?</h3>
             <p className="text-gray-400 text-sm">
-              Are you sure you want to reject this car? This action cannot be undone and the owner will be notified.
+              Are you sure you want to reject {selectedCar?.manufacturer} {selectedCar?.modelName}?
+              This action cannot be undone and the owner will be notified.
             </p>
           </div>
 
           <div className="space-y-3">
             <Button
               onClick={handleConfirmReject}
-              className="w-full bg-red-600 hover:bg-red-700 text-white h-11 rounded-lg font-medium"
+              disabled={approveLoading}
+              className="w-full bg-red-600 hover:bg-red-700 text-white h-11 rounded-lg font-medium disabled:opacity-50"
             >
-              Yes, Reject
+              {approveLoading ? 'Rejecting...' : 'Yes, Reject'}
             </Button>
             <Button
               onClick={() => setShowRejectModal(false)}
+              disabled={approveLoading}
               className="w-full bg-transparent hover:bg-gray-700/50 text-gray-300 border border-gray-600 h-11 rounded-lg font-medium"
             >
               Cancel

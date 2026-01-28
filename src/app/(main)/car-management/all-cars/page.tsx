@@ -10,124 +10,47 @@ import { Filter, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Input } from '../../../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../components/ui/select';
+import { useGetAllCarQuery } from '../../../../features/car/carApi';
+import { baseURL } from '../../../../utils/BaseURL';
 
-// User Interface with only needed properties
-interface User {
+// Car Interface based on API response
+interface Car {
   _id: string;
-  profile: string;
-  first_name: string;
-  last_name: string;
-  make: string;
-  model: string;
+  images: string[];
+  userId: {
+    _id: string;
+    name: string;
+  };
+  manufacturer: string;
+  year: string;
+  modelName: string;
+  status: string;
   createdAt: string;
+  updatedAt: string;
+  categoryName?: string;
+  battleCost?: number;
+  Reward?: number;
+  ranking?: number;
+  votes?: number;
+  Top?: number;
 }
 
-// Demo Data with only needed properties
-const DEMO_USERS: User[] = [
-  {
-    _id: "1",
-    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    first_name: "Jane",
-    last_name: "Cooper",
-    make: "Ford",
-    model: "Mustang 2022",
-    createdAt: "2024-01-15T10:30:00Z",
-  },
-  {
-    _id: "2",
-    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    first_name: "John",
-    last_name: "Cooper",
-    make: "Toyota",
-    model: "Camry 2023",
-    createdAt: "2024-02-20T09:15:00Z",
-  },
-  {
-    _id: "3",
-    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    first_name: "Robert",
-    last_name: "Johnson",
-    make: "Tesla",
-    model: "Model S",
-    createdAt: "2024-03-10T14:45:00Z",
-  },
-  {
-    _id: "4",
-    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    first_name: "Emily",
-    last_name: "Wilson",
-    make: "BMW",
-    model: "X5 2024",
-    createdAt: "2024-04-05T16:20:00Z",
-  },
-  {
-    _id: "5",
-    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    first_name: "Michael",
-    last_name: "Brown",
-    make: "Mercedes",
-    model: "E-Class",
-    createdAt: "2024-05-12T08:30:00Z",
-  },
-  {
-    _id: "6",
-    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    first_name: "Sarah",
-    last_name: "Davis",
-    make: "Audi",
-    model: "Q7",
-    createdAt: "2024-06-18T12:15:00Z",
-  },
-  {
-    _id: "7",
-    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    first_name: "David",
-    last_name: "Miller",
-    make: "Honda",
-    model: "Civic 2023",
-    createdAt: "2024-07-22T14:40:00Z",
-  },
-  {
-    _id: "8",
-    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    first_name: "Lisa",
-    last_name: "Taylor",
-    make: "Hyundai",
-    model: "Tucson",
-    createdAt: "2024-08-30T16:25:00Z",
-  },
-  {
-    _id: "9",
-    profile: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    first_name: "James",
-    last_name: "Anderson",
-    make: "Chevrolet",
-    model: "Silverado",
-    createdAt: "2024-09-15T10:10:00Z",
-  },
-  ...Array.from({ length: 39 }, (_, i) => ({
-    _id: `${i + 10}`,
-    profile: i % 3 === 0 ? "" : `/profiles/user${(i % 9) + 1}.jpg`,
-    first_name: ["Alex", "Emma", "Chris", "Olivia", "Daniel", "Sophia", "Matthew", "Isabella", "Andrew", "Mia"][i % 10],
-    last_name: ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez"][i % 10],
-    make: ["Ford", "Toyota", "Tesla", "BMW", "Mercedes", "Audi", "Honda", "Hyundai", "Chevrolet", "Nissan"][i % 10],
-    model: [`Model ${String.fromCharCode(65 + (i % 5))}`, `Series ${i % 5 + 1}`, `Edition ${2020 + (i % 5)}`, `Type ${i % 3 + 1}`, `Class ${String.fromCharCode(65 + (i % 3))}`][i % 5],
-    createdAt: new Date(2024, i % 12, (i % 28) + 1).toISOString(),
-  }))
-];
+
 
 // Main Component
 export default function UserManagement() {
-  const [users] = useState<User[]>(DEMO_USERS);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>(DEMO_USERS);
+  const [filteredCars, setFilteredCars] = useState<Car[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
-
+  const { data: apiResponse, isLoading } = useGetAllCarQuery({});
   const itemsPerPage = 9;
 
+  // Extract cars from API response
+  const cars: Car[] = apiResponse?.data || [];
+
   // Get owner's full name
-  const getOwnerName = (user: User): string => {
-    return `${user.first_name} ${user.last_name}`;
+  const getOwnerName = (car: Car): string => {
+    return car.userId?.name || 'Unknown';
   };
 
   // Format date to readable format
@@ -140,31 +63,38 @@ export default function UserManagement() {
     });
   };
 
-  // Filter users
+  // Filter cars
   useEffect(() => {
-    const filtered = users.filter(user => {
-      const ownerName = getOwnerName(user).toLowerCase();
-      const make = user.make.toLowerCase();
-      const model = user.model.toLowerCase();
-      const date = formatDate(user.createdAt).toLowerCase();
+    if (!cars.length) {
+      setFilteredCars([]);
+      return;
+    }
+
+    const filtered = cars.filter(car => {
+      const ownerName = getOwnerName(car).toLowerCase();
+      const manufacturer = car.manufacturer?.toLowerCase() || '';
+      const modelName = car.modelName?.toLowerCase() || '';
+      const year = car.year?.toLowerCase() || '';
+      const date = formatDate(car.createdAt).toLowerCase();
 
       const matchesSearch = ownerName.includes(searchQuery.toLowerCase()) ||
-        make.includes(searchQuery.toLowerCase()) ||
-        model.includes(searchQuery.toLowerCase()) ||
+        manufacturer.includes(searchQuery.toLowerCase()) ||
+        modelName.includes(searchQuery.toLowerCase()) ||
+        year.includes(searchQuery.toLowerCase()) ||
         date.includes(searchQuery.toLowerCase());
 
       return matchesSearch;
     });
 
-    setFilteredUsers(filtered);
+    setFilteredCars(filtered);
     setCurrentPage(1);
-  }, [users, searchQuery]);
+  }, [cars, searchQuery]);
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredCars.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentUsers = filteredUsers.slice(startIndex, endIndex);
+  const currentCars = filteredCars.slice(startIndex, endIndex);
 
   // Search handler
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -209,6 +139,15 @@ export default function UserManagement() {
     return pages;
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="">
       <div className="flex flex-col bg-[#1C2936] p-4 rounded-lg md:flex-row gap-4 mb-6">
@@ -222,7 +161,7 @@ export default function UserManagement() {
           />
         </div>
 
-        <div className="w-full md:w-auto relative h-full">
+        {/* <div className="w-full md:w-auto relative h-full">
           <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 z-10" size={20} />
           <Select onValueChange={() => { }}>
             <SelectTrigger className="w-full md:w-[200px] h-20 py-[23px] bg-[#0d1829] border-gray-700 text-white pl-12 rounded-lg cursor-pointer">
@@ -234,75 +173,82 @@ export default function UserManagement() {
               <SelectItem value="2023">2023</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </div> */}
       </div>
 
       <div className="">
-        {/* Users List */}
+        {/* Cars List */}
         <div className="">
           {/* Header Row */}
           <div className="bg-[#243b5e] rounded-t-xl px-6 py-4 grid grid-cols-5 gap-4 text-sm font-medium text-gray-300">
             <div>Car Image</div>
             <div>Owner Name</div>
             <div>Date</div>
-            <div>Make</div>
+            <div>Manufacturer</div>
             <div>Model</div>
           </div>
 
-          {/* User Rows */}
-          {currentUsers.length === 0 ? (
+          {/* Loading state for cars */}
+          {isLoading ? (
             <div className="py-8 text-center text-gray-500">
-              No records found matching your criteria
+              Loading cars...
+            </div>
+          ) : currentCars.length === 0 ? (
+            <div className="py-8 text-center text-gray-500">
+              {cars.length === 0
+                ? "No cars available"
+                : "No records found matching your criteria"
+              }
             </div>
           ) : (
-            currentUsers.map((user) => (
+            currentCars.map((car) => (
               <div
-                key={user._id}
+                key={car._id}
                 className="bg-[#1C2936] hover:bg-[#2a4470] border-b border-gray-700 px-6 py-4 grid grid-cols-5 gap-4 items-center transition-colors"
               >
                 {/* Car Image */}
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12 rounded-lg">
                     <AvatarImage
-                      src={user.profile || "/placeholder-car.jpg"}
-                      alt={`${user.make} ${user.model}`}
-                      className="rounded-lg"
+                      src={baseURL + car.images?.[0] || "/placeholder-car.jpg"}
+                      alt={`${car.manufacturer} ${car.modelName}`}
+                      className="rounded-lg object-cover"
                     />
                     <AvatarFallback className="rounded-lg bg-gray-700 text-white">
-                      {user.make.substring(0, 1)}
+                      {car.manufacturer?.substring(0, 1) || 'C'}
                     </AvatarFallback>
                   </Avatar>
                 </div>
 
                 {/* Owner Name */}
                 <div className="text-white text-sm font-medium">
-                  {getOwnerName(user)}
+                  {getOwnerName(car)}
                 </div>
 
                 {/* Date */}
                 <div className="text-gray-300 text-sm">
-                  {formatDate(user.createdAt)}
+                  {formatDate(car.createdAt)}
                 </div>
 
-                {/* Make */}
+                {/* Manufacturer */}
                 <div className="text-gray-300 text-sm">
-                  {user.make}
+                  {car.manufacturer}
                 </div>
 
                 {/* Model */}
                 <div className="text-gray-300 text-sm">
-                  {user.model}
+                  {car.modelName} {car.year}
                 </div>
               </div>
             ))
           )}
         </div>
 
-        {/* Pagination */}
-        {filteredUsers.length > 0 && (
+        {/* Pagination - Only show if there are cars */}
+        {filteredCars.length > 0 && (
           <div className="flex flex-col bg-[#1C2936] rounded-b-xl p-5 sm:flex-row items-center justify-between gap-4 pt-6 border-t border-gray-700">
             <div className="text-sm text-gray-400">
-              Showing {startIndex + 1}-{Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length} Records
+              Showing {startIndex + 1}-{Math.min(endIndex, filteredCars.length)} of {filteredCars.length} Records
             </div>
 
             <div className="flex items-center gap-2">

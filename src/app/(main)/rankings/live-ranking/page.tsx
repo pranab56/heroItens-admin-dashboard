@@ -7,70 +7,47 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useGetAllCarQuery, useResetCarMutation } from '@/features/car/carApi';
 import { AlertTriangle, RotateCw, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { baseURL } from '../../../../utils/BaseURL';
 
-// Car Interface
+// Car Interface based on API response
 interface Car {
   _id: string;
-  image: string;
-  carName: string;
-  carModal: string;
-  vote: number;
+  images: string[];
+  userId: {
+    _id: string;
+    name: string;
+  };
+  manufacturer: string;
+  year: string;
+  modelName: string;
+  votes: number;
+  ranking: number;
+  status: string;
+  battleCost?: number;
+  Reward?: number;
+  Top?: number;
+  categoryName?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// Demo Data
-const DEMO_CARS: Car[] = [
-  {
-    _id: "1",
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    carName: "Hypercars",
-    carModal: "W16 Quad-Turbo . France",
-    vote: 5
-  },
-  {
-    _id: "2",
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    carName: "Hypercars",
-    carModal: "W16 Quad-Turbo . France",
-    vote: 5
-  },
-  {
-    _id: "3",
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    carName: "Hypercars",
-    carModal: "W16 Quad-Turbo . France",
-    vote: 5
-  },
-  {
-    _id: "4",
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    carName: "Hypercars",
-    carModal: "W16 Quad-Turbo . France",
-    vote: 5
-  },
-  {
-    _id: "5",
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    carName: "Hypercars",
-    carModal: "W16 Quad-Turbo . France",
-    vote: 5
-  },
-  {
-    _id: "6",
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    carName: "Hypercars",
-    carModal: "W16 Quad-Turbo . France",
-    vote: 5
-  },
-  {
-    _id: "7",
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop",
-    carName: "Hypercars",
-    carModal: "W16 Quad-Turbo . France",
-    vote: 5
-  }
-];
+// API Response Interface
+interface ApiResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: Car[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPage: number;
+  };
+}
 
 // Modal Components
 interface ModalProps {
@@ -97,24 +74,43 @@ const Modal = ({ open, onOpenChange, children }: ModalProps) => {
 
 // Main Component
 export default function CarManagement() {
-  const [cars] = useState<Car[]>(DEMO_CARS);
-  const [filteredCars, setFilteredCars] = useState<Car[]>(DEMO_CARS);
+  const { data: apiResponse, isLoading } = useGetAllCarQuery({});
+  const [cars, setCars] = useState<Car[]>([]);
+  const [filteredCars, setFilteredCars] = useState<Car[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [resetCar, { isLoading: resetLoading }] = useResetCarMutation();
 
   const itemsPerPage = 7;
 
-  // Filter cars
+  // Transform API data when it loads
   useEffect(() => {
+    if (apiResponse?.success && apiResponse.data) {
+      setCars(apiResponse.data);
+      setFilteredCars(apiResponse.data);
+    }
+  }, [apiResponse]);
+
+  // Filter cars based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredCars(cars);
+      setCurrentPage(1);
+      return;
+    }
+
+
+
+    const searchLower = searchQuery.toLowerCase();
     const filtered = cars.filter(car => {
-      const searchLower = searchQuery.toLowerCase();
       return (
-        car.carName.toLowerCase().includes(searchLower) ||
-        car.carModal.toLowerCase().includes(searchLower)
+        car.manufacturer?.toLowerCase().includes(searchLower) ||
+        car.modelName?.toLowerCase().includes(searchLower) ||
+        car.year?.toString().includes(searchQuery) ||
+        car.userId?.name?.toLowerCase().includes(searchLower)
       );
     });
 
@@ -128,21 +124,57 @@ export default function CarManagement() {
   const endIndex = startIndex + itemsPerPage;
   const currentCars = filteredCars.slice(startIndex, endIndex);
 
+
+
   // Handlers
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
 
-
   const handleRejectClick = (car: Car) => {
     setSelectedCar(car);
-    setShowDetailsModal(false);
     setShowRejectModal(true);
   };
 
 
-  const handleConfirmReject = () => {
-    console.log('Car rejected:', selectedCar);
+  useEffect(() => {
+    if (!searchQuery.trim() && selectedStatus === 'all') {
+      setFilteredCars(cars);
+      setCurrentPage(1);
+      return;
+    }
+
+    const searchLower = searchQuery.toLowerCase();
+    const filtered = cars.filter(car => {
+      // Search filter
+      const matchesSearch = searchQuery.trim() === '' ||
+        car.manufacturer?.toLowerCase().includes(searchLower) ||
+        car.modelName?.toLowerCase().includes(searchLower) ||
+        car.year?.toString().includes(searchQuery) ||
+        car.userId?.name?.toLowerCase().includes(searchLower);
+
+      // Status filter
+      const matchesStatus = selectedStatus === 'all' || car.status === selectedStatus;
+
+      return matchesSearch && matchesStatus;
+    });
+
+    setFilteredCars(filtered);
+    setCurrentPage(1);
+  }, [cars, searchQuery, selectedStatus]);
+
+  const handleConfirmReject = async () => {
+
+    try {
+      const response = await resetCar(selectedCar?._id).unwrap();
+      if (response.success) {
+        toast.success(response.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+
     setShowRejectModal(false);
     setSelectedCar(null);
   };
@@ -176,6 +208,32 @@ export default function CarManagement() {
     return pages;
   };
 
+  // Get first image or placeholder
+  const getCarImage = (car: Car) => {
+    if (car.images && car.images.length > 0) {
+      return baseURL + car.images[0];
+    }
+    return "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=80&h=80&fit=crop";
+  };
+
+  // Format car name
+  const getCarName = (car: Car) => {
+    return `${car.manufacturer} ${car.modelName}`;
+  };
+
+  // Format car model info
+  const getCarModelInfo = (car: Car) => {
+    return `${car.year} • ${car.categoryName || 'No Category'}`;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-white">Loading cars...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="">
       {/* Search and Filter */}
@@ -183,21 +241,26 @@ export default function CarManagement() {
         <div className="flex w-full md:w-5/12 relative">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
           <Input
-            placeholder="Screen here"
+            placeholder="Search by car name, model, year or owner..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="pl-12 h-12 bg-[#0d1829] border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
+            className="pl-12 h-12  border-gray-500 placeholder:text-gray-300 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
           />
         </div>
 
         <div className="w-full md:w-auto relative h-full">
-          <Select onValueChange={() => { }}>
-            <SelectTrigger className="w-full md:w-[200px] h-20 py-[23px] bg-[#0d1829] border-gray-700 text-white pl-4 rounded-lg cursor-pointer">
-              <SelectValue placeholder="Category: Active" />
+          <Select
+            value={selectedStatus}
+            onValueChange={(value) => setSelectedStatus(value)}
+          >
+            <SelectTrigger className="w-full md:w-[200px] h-12 py-6 border-gray-500 text-white pl-4 rounded-lg cursor-pointer">
+              <SelectValue placeholder="Status: All" />
             </SelectTrigger>
             <SelectContent className='bg-[#1a2942] border-gray-700 text-white cursor-pointer'>
-              <SelectItem value="2025">Active</SelectItem>
-              <SelectItem value="2024">InActive</SelectItem>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="APPROVED">Approved</SelectItem>
+              <SelectItem value="PENDING">Pending</SelectItem>
+              <SelectItem value="REJECTED">Rejected</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -216,34 +279,49 @@ export default function CarManagement() {
         {/* Rows */}
         {currentCars.length === 0 ? (
           <div className="bg-[#1C2936] py-12 text-center text-gray-500">
-            No records found matching your criteria
+            {cars.length === 0 ? "No cars found" : "No records found matching your criteria"}
           </div>
         ) : (
-          currentCars.map((car) => (
+          currentCars.map((car, index) => (
             <div
               key={car._id}
               className="bg-[#1C2936] hover:bg-[#2a4470] border-b border-gray-700 px-6 py-4 grid grid-cols-4 gap-4 items-center transition-colors"
             >
-              <div className="text-white text-sm font-medium">#{car._id}</div>
+              <div className="text-white text-sm font-medium">
+                #{car.ranking || startIndex + index + 1}
+              </div>
               <div className='flex items-start gap-2'>
                 <Avatar className="h-10 w-20 rounded-lg">
-                  <AvatarImage src={car.image} alt={car.carName} className="rounded-lg object-cover" />
-
+                  <AvatarImage
+                    src={getCarImage(car)}
+                    alt={getCarName(car)}
+                    className="rounded-lg object-cover"
+                  />
                 </Avatar>
                 <div>
-                  <div className="text-white text-sm font-medium">{car.carName}</div>
-                  <div className="text-white text-sm font-medium">{car.carModal}</div>
+                  <div className="text-white text-sm font-medium">{getCarName(car)}</div>
+                  <div className="text-gray-400 text-xs">{getCarModelInfo(car)}</div>
+                  <div className="text-gray-500 text-xs mt-1">
+                    Owner: {car.userId?.name || 'Unknown'}
+                  </div>
+                  <div className={`text-xs mt-1 px-2 py-1 rounded-full inline-block ${car.status === 'APPROVED' ? 'bg-green-900/30 text-green-400' :
+                    car.status === 'PENDING' ? 'bg-yellow-900/30 text-yellow-400' :
+                      'bg-red-900/30 text-red-400'
+                    }`}>
+                    {car.status}
+                  </div>
                 </div>
               </div>
 
-              <div className="text-white  text-sm font-medium">{car.vote}</div>
-
+              <div className="text-white text-sm font-medium">
+                {car.votes || 0} votes
+              </div>
 
               <div className="flex gap-2">
                 <button
                   onClick={() => handleRejectClick(car)}
                   className="p-2 cursor-pointer bg-red-600/20 hover:bg-red-600/30 rounded-lg transition-colors"
-                  title="Reject"
+                  title="Reset Votes"
                 >
                   <RotateCw size={18} className="text-red-400" />
                 </button>
@@ -304,24 +382,28 @@ export default function CarManagement() {
             <div className="w-16 h-16 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertTriangle size={32} className="text-red-400" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">Reset All Votes</h3>
+            <h3 className="text-xl font-semibold text-white mb-2">
+              Reset Votes for {selectedCar ? `${selectedCar.manufacturer} ${selectedCar.modelName}` : 'this car'}
+            </h3>
             <p className="text-gray-400 text-sm">
-              This action is irreversible. All current rankings, vote counts, and user data for the 'Hypercars' category permanently set to zero.
+              This action will reset all votes for this car back to zero. This action is irreversible.
             </p>
           </div>
 
           <div className="flex items-center gap-4">
             <Button
               onClick={() => setShowRejectModal(false)}
-              className="max-w-full px-16 bg-transparent hover:bg-gray-700/50 text-gray-300 border border-gray-600 h-11 rounded-lg font-medium"
+              className="flex-1 bg-transparent hover:bg-gray-700/50 text-gray-300 border border-gray-600 h-11 rounded-lg font-medium"
+              disabled={resetLoading}
             >
               Cancel
             </Button>
             <Button
               onClick={handleConfirmReject}
-              className="max-w-full px-16 bg-red-600 hover:bg-red-700 text-white h-11 rounded-lg font-medium"
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white h-11 rounded-lg font-medium"
+              disabled={resetLoading}
             >
-              Reset Now
+              {resetLoading ? 'Resetting...' : 'Reset Now'}
             </Button>
           </div>
         </div>
