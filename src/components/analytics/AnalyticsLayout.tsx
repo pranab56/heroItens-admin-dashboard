@@ -42,16 +42,27 @@ interface OverviewData {
   rejectedCar: number;
 }
 
+interface ChartData {
+  month: string;
+  value: number;
+}
+
+interface FilterOption {
+  id: string;
+  label: string;
+  months: number;
+}
+
 export default function AnalyticsLayout() {
   const { data, isLoading } = useOverviewQuery({});
   const { data: carData, isLoading: carLoading } = useGetAllCarQuery({});
   const [resetCar] = useResetCarMutation();
 
   // Transform API data for BarChart
-  const transformUserGrowthData = () => {
+  const transformUserGrowthData = (): ChartData[] => {
     if (!data?.data?.userGrowth) return [];
 
-    return data.data.userGrowth.map((item: any) => ({
+    return data.data.userGrowth.map((item: UserGrowthData) => ({
       month: item.month,
       value: item.count
     }));
@@ -103,14 +114,14 @@ export default function AnalyticsLayout() {
   ];
 
   // Filter options
-  const filterOptions = [
+  const filterOptions: FilterOption[] = [
     { id: '3months', label: 'Last 3 Months', months: 3 },
     { id: '6months', label: 'Last 6 Months', months: 6 },
     { id: 'year', label: 'This Year', months: 12 },
     { id: 'all', label: 'All Time', months: 12 }
   ];
 
-  const [selectedFilter, setSelectedFilter] = useState('year');
+  const [selectedFilter, setSelectedFilter] = useState<string>('year');
   const userGrowthData = transformUserGrowthData();
 
   const handleFilterChange = (filterId: string) => {
@@ -138,7 +149,7 @@ export default function AnalyticsLayout() {
   const topRankedCars = [...cars].sort((a, b) => (a.ranking || 0) - (b.ranking || 0));
 
   // Filter data based on selected filter
-  const getFilteredData = () => {
+  const getFilteredData = (): ChartData[] => {
     if (!userGrowthData.length) return [];
 
     const currentDate = new Date();
@@ -248,14 +259,14 @@ export default function AnalyticsLayout() {
                     <div className="text-center">
                       <p className="text-gray-400 text-sm">Total Users (Period)</p>
                       <p className="text-2xl font-semibold text-white">
-                        {filteredData.reduce((sum, item) => sum + item.value, 0).toLocaleString()}
+                        {filteredData.reduce((sum: number, item: ChartData) => sum + item.value, 0).toLocaleString()}
                       </p>
                     </div>
                     <div className="text-center">
                       <p className="text-gray-400 text-sm">Average Monthly</p>
                       <p className="text-2xl font-semibold text-white">
                         {filteredData.length > 0
-                          ? Math.round(filteredData.reduce((sum, item) => sum + item.value, 0) / filteredData.length).toLocaleString()
+                          ? Math.round(filteredData.reduce((sum: number, item: ChartData) => sum + item.value, 0) / filteredData.length).toLocaleString()
                           : '0'}
                       </p>
                     </div>

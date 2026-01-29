@@ -82,8 +82,8 @@ export default function LoginPage() {
 
         // Save token to storage
         if (response.data) {
-          saveToken(response?.data?.token);
-          const decoded = jwtDecode(response?.data?.token);
+          saveToken(response?.data?.accessToken);
+          const decoded = jwtDecode<{ id: string }>(response?.data?.accessToken);
           localStorage.setItem("HeroItemsAdminId", decoded?.id);
           toast.success(response.message || 'Login successful!');
           await new Promise(resolve => setTimeout(resolve, 800));
