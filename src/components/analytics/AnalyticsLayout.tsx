@@ -1,39 +1,78 @@
 "use client";
 
 import { Card, CardContent } from '@/components/ui/card';
+import { useGetAllCarQuery, useResetCarMutation } from '@/features/car/carApi';
 import { useOverviewQuery } from '@/features/overview/overviewApi';
-import { Car, Clock, Filter, Users, XCircle, Zap } from 'lucide-react';
+import { baseURL } from '@/utils/BaseURL';
+import { Car as CarIcon, Clock, Filter, Users, XCircle, Zap } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
+import { CustomLoading } from '../../hooks/CustomLoading';
 import { BarChart } from './BarChart';
 import { StatsCard } from './StatsCard';
 
+// Interfaces
+interface UserGrowthData {
+  month: string;
+  count: number;
+}
+
+interface Car {
+  _id: string;
+  images: string[];
+  userId: {
+    _id: string;
+    name: string;
+  };
+  modelName: string;
+  manufacturer: string;
+  status: string;
+  ranking: number;
+  votes: number;
+  createdAt: string;
+}
+
+interface OverviewData {
+  userGrowth: UserGrowthData[];
+  totalUser: number;
+  totalCar: number;
+  totalVotes: number;
+  pendingCar: number;
+  rejectedCar: number;
+}
+
 export default function AnalyticsLayout() {
   const { data, isLoading } = useOverviewQuery({});
+  const { data: carData, isLoading: carLoading } = useGetAllCarQuery({});
+  const [resetCar] = useResetCarMutation();
 
   // Transform API data for BarChart
   const transformUserGrowthData = () => {
     if (!data?.data?.userGrowth) return [];
 
-    return data.data.userGrowth.map(item => ({
+    return data.data.userGrowth.map((item: any) => ({
       month: item.month,
       value: item.count
     }));
   };
+
+  const overviewData = data?.data as OverviewData | undefined;
 
   const statsData = [
     {
       id: 1,
       icon: Users,
       title: 'Total Users',
-      value: data?.data?.totalUser || 0,
+      value: overviewData?.totalUser || 0,
       valueColor: 'text-cyan-400',
       bgColor: 'bg-[#1C2936]'
     },
     {
       id: 2,
-      icon: Car,
+      icon: CarIcon,
       title: 'Total Cars',
-      value: data?.data?.totalCar || 0,
+      value: overviewData?.totalCar || 0,
       valueColor: 'text-cyan-400',
       bgColor: 'bg-[#1C2936]'
     },
@@ -41,7 +80,7 @@ export default function AnalyticsLayout() {
       id: 3,
       icon: Zap,
       title: 'Total Votes',
-      value: data?.data?.totalVotes || 0,
+      value: overviewData?.totalVotes || 0,
       valueColor: 'text-cyan-400',
       bgColor: 'bg-[#1C2936]'
     },
@@ -49,7 +88,7 @@ export default function AnalyticsLayout() {
       id: 4,
       icon: Clock,
       title: 'Pending Cars',
-      value: data?.data?.pendingCar || 0,
+      value: overviewData?.pendingCar || 0,
       valueColor: 'text-yellow-400',
       bgColor: 'bg-[#1C2936]'
     },
@@ -57,7 +96,7 @@ export default function AnalyticsLayout() {
       id: 5,
       icon: XCircle,
       title: 'Reject Cars',
-      value: data?.data?.rejectedCar || 0,
+      value: overviewData?.rejectedCar || 0,
       valueColor: 'text-red-400',
       bgColor: 'bg-[#1C2936]'
     }
@@ -78,50 +117,25 @@ export default function AnalyticsLayout() {
     setSelectedFilter(filterId);
   };
 
-  const pendingVerifications = [
-    {
-      id: 1,
-      carImage: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=100&h=60&fit=crop',
-      ownerName: 'Jane Cooper',
-      date: 'October 24, 2025'
-    },
-    {
-      id: 2,
-      carImage: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=100&h=60&fit=crop',
-      ownerName: 'Jane Cooper',
-      date: 'October 24, 2025'
-    },
-    {
-      id: 3,
-      carImage: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=100&h=60&fit=crop',
-      ownerName: 'Jane Cooper',
-      date: 'October 24, 2025'
+  const handleReset = async (id: string) => {
+    try {
+      const response = await resetCar(id).unwrap();
+      if (response.success) {
+        toast.success(response.message);
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
     }
-  ];
+  }
 
-  const topRankedCars = [
-    {
-      id: 1,
-      carImage: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=100&h=60&fit=crop',
-      carName: 'Hypercars',
-      carModel: 'W16 Quad...',
-      votes: '12,450'
-    },
-    {
-      id: 2,
-      carImage: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=100&h=60&fit=crop',
-      carName: 'Hypercars',
-      carModel: 'W16 Quad...',
-      votes: '12,450'
-    },
-    {
-      id: 3,
-      carImage: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=100&h=60&fit=crop',
-      carName: 'Hypercars',
-      carModel: 'W16 Quad...',
-      votes: '12,450'
-    }
-  ];
+  // Get cars from API
+  const cars: Car[] = carData?.data || [];
+
+  // Filter pending cars for verification list
+  const pendingVerifications = cars.filter((car) => car.status === 'PENDING');
+
+  // Sort cars by ranking (ascending) for Top Ranked Cars list
+  const topRankedCars = [...cars].sort((a, b) => (a.ranking || 0) - (b.ranking || 0));
 
   // Filter data based on selected filter
   const getFilteredData = () => {
@@ -129,7 +143,6 @@ export default function AnalyticsLayout() {
 
     const currentDate = new Date();
     const currentMonthIndex = currentDate.getMonth(); // 0-based index (Jan = 0)
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     switch (selectedFilter) {
       case '3months':
@@ -151,12 +164,8 @@ export default function AnalyticsLayout() {
 
   const filteredData = getFilteredData();
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
+  if (isLoading || carLoading) {
+    return <CustomLoading />
   }
 
   return (
@@ -296,20 +305,24 @@ export default function AnalyticsLayout() {
                   <span>Date</span>
                   <span>Action</span>
                 </div>
-                {pendingVerifications.map((item) => (
-                  <div key={item.id} className="grid grid-cols-4 gap-4 items-center">
-                    <img
-                      src={item.carImage}
-                      alt="Car"
-                      className="w-20 h-12 rounded-lg object-cover"
-                    />
-                    <span className="text-gray-300 text-sm">{item.ownerName}</span>
-                    <span className="text-gray-400 text-sm">{item.date}</span>
-                    <button className="text-green-400 hover:underline cursor-pointer text-sm font-medium hover:text-green-300">
-                      Review
-                    </button>
-                  </div>
-                ))}
+                {pendingVerifications.length > 0 ? (
+                  pendingVerifications.map((car) => (
+                    <div key={car._id} className="grid grid-cols-4 gap-4 items-center">
+                      <img
+                        src={car.images && car.images[0] ? `${baseURL}${car.images[0]}` : ""}
+                        alt={car.modelName}
+                        className="w-20 h-12 rounded-lg object-cover"
+                      />
+                      <span className="text-gray-300 text-sm">{car.userId?.name || 'Unknown'}</span>
+                      <span className="text-gray-400 text-sm">{new Date(car.createdAt).toLocaleDateString()}</span>
+                      <Link href={`/users/${car.userId?._id}`} className="text-green-400 hover:underline cursor-pointer text-sm font-medium hover:text-green-300">
+                        Review
+                      </Link>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-center py-4">No pending verifications</p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -324,25 +337,29 @@ export default function AnalyticsLayout() {
                   <span>Total Votes</span>
                   <span>Action</span>
                 </div>
-                {topRankedCars.map((item) => (
-                  <div key={item.id} className="grid grid-cols-3 gap-4 items-center">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={item.carImage}
-                        alt="Car"
-                        className="w-20 h-12 rounded-lg object-cover"
-                      />
-                      <div>
-                        <p className="text-gray-300 text-sm font-medium">{item.carName}</p>
-                        <p className="text-gray-500 text-xs">{item.carModel}</p>
+                {topRankedCars.length > 0 ? (
+                  topRankedCars.map((car) => (
+                    <div key={car._id} className="grid grid-cols-3 gap-4 items-center">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={car.images && car.images[0] ? `${baseURL}${car.images[0]}` : ""}
+                          alt={car.modelName}
+                          className="w-20 h-12 rounded-lg object-cover"
+                        />
+                        <div>
+                          <p className="text-gray-300 text-sm font-medium">{car.manufacturer} {car.modelName}</p>
+                          <p className="text-gray-500 text-xs">Rank: {car.ranking}</p>
+                        </div>
                       </div>
+                      <span className="text-gray-300 text-sm">{car.votes || 0}</span>
+                      <button onClick={() => handleReset(car._id)} className="text-red-400 hover:underline cursor-pointer text-sm font-medium hover:text-red-300">
+                        Reset
+                      </button>
                     </div>
-                    <span className="text-gray-300 text-sm">{item.votes}</span>
-                    <button className="text-red-400 hover:underline cursor-pointer text-sm font-medium hover:text-red-300">
-                      Reset
-                    </button>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-center py-4">No cars available</p>
+                )}
               </div>
             </CardContent>
           </Card>

@@ -12,6 +12,7 @@ import { AlertTriangle, Check, Eye, Filter, Search, X } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useApproveCarMutation, useGetAllCarQuery } from '../../../../features/car/carApi';
+import { CustomLoading } from '../../../../hooks/CustomLoading';
 import { baseURL } from '../../../../utils/BaseURL';
 
 // Car Interface based on API response
@@ -297,11 +298,7 @@ export default function CarManagement() {
   const isRejectDisabled = (car: Car) => car.status === 'REJECTED';
 
   if (loading || carsLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-white">Loading cars...</div>
-      </div>
-    );
+    return <CustomLoading />
   }
 
   return (

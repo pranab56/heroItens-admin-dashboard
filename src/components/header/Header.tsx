@@ -40,8 +40,8 @@ export default function Header() {
   };
 
   const handleLogout = () => {
-    // Add your logout logic here
-    console.log("Logging out...");
+    localStorage.removeItem("HeroItemsAdmin");
+    localStorage.removeItem("HeroItemsAdminId");
     setIsDropdownOpen(false);
     router.push("/auth/login");
   };

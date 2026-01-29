@@ -11,6 +11,7 @@ import { useGetAllCarQuery, useResetCarMutation } from '@/features/car/carApi';
 import { AlertTriangle, RotateCw, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { CustomLoading } from '../../../../hooks/CustomLoading';
 import { baseURL } from '../../../../utils/BaseURL';
 
 // Car Interface based on API response
@@ -227,11 +228,7 @@ export default function CarManagement() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-white">Loading cars...</div>
-      </div>
-    );
+    return <CustomLoading />
   }
 
   return (

@@ -4,34 +4,25 @@ import { baseApi } from "../../utils/apiBaseQuery";
 export const profileApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getMyProfile: builder.query({
-      query: () => ({
-        url: "/users/my-profile",
+      query: (userId) => ({
+        url: `/user/profile?userId=${userId}`,
         method: "GET",
       }),
     }),
 
     updateProfile: builder.mutation({
       query: (data) => ({
-        url: "/users/update-my-profile",
+        url: "/user/profile",
         method: "PATCH",
         body: data
       }),
     }),
 
-    twoStepVerification: builder.mutation({
-      query: () => ({
-        url: "/users/two-step-varification-on-of",
+    changePassword: builder.mutation({
+      query: (body) => ({
+        url: `/auth/change-password`,
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("PharmacyAdmin")}`,
-        }
-      }),
-    }),
-
-    resetPasswordProfile: builder.mutation({
-      query: () => ({
-        url: "/auth/change-password",
-        method: "POST",
+        body: body
       }),
     }),
   }),
@@ -40,6 +31,5 @@ export const profileApi = baseApi.injectEndpoints({
 export const {
   useGetMyProfileQuery,
   useUpdateProfileMutation,
-  useTwoStepVerificationMutation,
-  useResetPasswordProfileMutation
+  useChangePasswordMutation
 } = profileApi;

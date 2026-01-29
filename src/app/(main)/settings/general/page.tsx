@@ -6,6 +6,7 @@ import { useGetGlobalSettingsQuery, useGlobalSettingsMutation } from '@/features
 import { Minus, Plus, Upload, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { CustomLoading } from '../../../../hooks/CustomLoading';
 import { baseURL } from '../../../../utils/BaseURL';
 
 export default function GlobalSystemSettings() {
@@ -117,12 +118,7 @@ export default function GlobalSystemSettings() {
   // Show loading state while fetching data
   if (isGlobalSettingsLoading) {
     return (
-      <div className="text-white p-6 flex items-center justify-center min-h-[400px]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-400">Loading settings...</p>
-        </div>
-      </div>
+      <CustomLoading />
     );
   }
 

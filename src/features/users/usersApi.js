@@ -18,11 +18,20 @@ export const usersApi = baseApi.injectEndpoints({
       }),
     }),
 
+    viewCarDetails: builder.query({
+      query: (id) => ({
+        url: `/car/all-car?userId=${id}`,
+        method: "GET",
+      }),
+    }),
+
+
   }),
 });
 
 
 export const {
   useGetAllUsersQuery,
-  useViewUserDetailsQuery
+  useViewUserDetailsQuery,
+  useViewCarDetailsQuery
 } = usersApi;

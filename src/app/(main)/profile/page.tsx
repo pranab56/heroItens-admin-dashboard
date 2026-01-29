@@ -1,194 +1,97 @@
 "use client";
 
 import { Button } from '@/components/ui/button';
-import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { CalendarIcon, Shield, User } from 'lucide-react';
+import { useChangePasswordMutation, useGetMyProfileQuery, useUpdateProfileMutation } from '@/features/profile/profileApi';
+import { baseURL } from '@/utils/BaseURL';
+import { Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-
-// Demo profile data
-const demoProfileData = {
-  id: "1",
-  fullName: "John Doe",
-  first_name: "John",
-  last_name: "Doe",
-  email: "john.doe@example.com",
-  role: "user",
-  phone: "+1 (555) 123-4567",
-  location: "New York, USA",
-  dateOfBirth: "1990-05-15",
-  profile: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=80&h=80&fit=crop",
-  twoStepVerification: false,
-  createdAt: "2024-01-01T10:00:00Z",
-  updatedAt: "2024-01-15T14:30:00Z"
-};
-
 
 export default function UserProfilePage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [passwordErrors, setPasswordErrors] = useState({ oldPassword: '', newPassword: '' });
+  const [passwordErrors, setPasswordErrors] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [showPassword, setShowPassword] = useState({ old: false, new: false, confirm: false });
 
-  // Demo state for profile data
-  const [profileData, setProfileData] = useState(demoProfileData);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
-  const [isResettingPassword, setIsResettingPassword] = useState(false);
-  const [isEnabling2FA, setIsEnabling2FA] = useState(false);
+  const togglePasswordVisibility = (field: 'old' | 'new' | 'confirm') => {
+    setShowPassword(prev => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  const { data: profileDataResponse, isLoading, refetch } = useGetMyProfileQuery(
+    typeof window !== 'undefined' ? localStorage.getItem("HeroItemsAdminId") : null,
+    { skip: typeof window === 'undefined' || !localStorage.getItem("HeroItemsAdminId") }
+  );
+
+  const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
+  const [updatePassword, { isLoading: isUpdatingPassword }] = useChangePasswordMutation();
+
+  const profileData = profileDataResponse?.data;
 
   const [editFormData, setEditFormData] = useState({
     fullName: '',
     profile: null as File | null,
     location: '',
+    phone: '',
     dateOfBirth: '' as string | Date
   });
 
-  // Activity log with dynamic timestamps
-  const [activityLog, setActivityLog] = useState<Array<{
-    icon: React.ComponentType<{ className?: string }>;
-    title: string;
-    description: string;
-    timestamp: string;
-    bgColor: string;
-    iconColor: string;
-  }>>([]);
-
-  // Initialize form data when component mounts
+  // Initialize form data when profile data loads
   useEffect(() => {
-    setIsLoading(true);
-
-    // Simulate API loading delay
-    setTimeout(() => {
-      // Parse dateOfBirth string to Date object if it exists
-      let dobDate: Date | string = '';
-      if (demoProfileData.dateOfBirth) {
-        const parsedDate = new Date(demoProfileData.dateOfBirth);
-        if (!isNaN(parsedDate.getTime())) {
-          dobDate = parsedDate;
-        }
-      }
-
+    if (profileData) {
       setEditFormData({
-        fullName: `${demoProfileData.first_name || ''} ${demoProfileData.last_name || ''}`.trim(),
+        fullName: profileData.name || '',
         profile: null,
-        location: demoProfileData.location || '',
-        dateOfBirth: dobDate
+        location: profileData.address || '',
+        phone: profileData.contact || '',
+        dateOfBirth: profileData.dateOfBirth ? new Date(profileData.dateOfBirth) : ''
       });
-
-      // Create activity log based on profile data
-      const activities = [];
-
-      if (demoProfileData.updatedAt) {
-        activities.push({
-          icon: User,
-          title: 'Profile Updated',
-          description: 'Profile information was updated',
-          timestamp: demoProfileData.updatedAt,
-          bgColor: 'bg-purple-100',
-          iconColor: 'text-purple-600'
-        });
-      }
-
-      if (demoProfileData.twoStepVerification) {
-        activities.push({
-          icon: Shield,
-          title: 'Security Settings Updated',
-          description: 'Enabled Two-Factor Authentication',
-          timestamp: demoProfileData.updatedAt,
-          bgColor: 'bg-purple-100',
-          iconColor: 'text-purple-600'
-        });
-      }
-
-      // Add some demo activities
-      activities.push({
-        icon: User,
-        title: 'Account Created',
-        description: 'Your account was successfully created',
-        timestamp: demoProfileData.createdAt,
-        bgColor: 'bg-blue-100',
-        iconColor: 'text-blue-600'
-      });
-
-      activities.push({
-        icon: Shield,
-        title: 'Login',
-        description: 'You logged in from a new device',
-        timestamp: '2024-01-10T09:15:00Z',
-        bgColor: 'bg-green-100',
-        iconColor: 'text-green-600'
-      });
-
-      setActivityLog(activities);
-      setIsLoading(false);
-    }, 500);
-  }, []);
-
-  // Add new activity to log
-  const addActivityLog = (title: string, description: string, icon: React.ComponentType<{ className?: string }>) => {
-    const newActivity = {
-      icon,
-      title,
-      description,
-      timestamp: new Date().toISOString(),
-      bgColor: 'bg-purple-100',
-      iconColor: 'text-purple-600'
-    };
-    setActivityLog(prev => [newActivity, ...prev]);
-  };
+    }
+  }, [profileData]);
 
   const handleSaveChanges = async () => {
-    setIsUpdatingProfile(true);
-
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
     try {
-      // Update profile data
-      const updatedProfile = {
-        ...profileData,
-        fullName: editFormData.fullName,
-        location: editFormData.location,
-        dateOfBirth: editFormData.dateOfBirth instanceof Date
-          ? editFormData.dateOfBirth.toISOString().split('T')[0]
-          : editFormData.dateOfBirth,
-        updatedAt: new Date().toISOString()
+      const formData = new FormData();
+
+      const updatePayload = {
+        name: editFormData.fullName,
+        address: editFormData.location,
+        contact: editFormData.phone,
+        // Include other fields if supported by API
+        ...(editFormData.dateOfBirth ? { dateOfBirth: editFormData.dateOfBirth } : {})
       };
 
-      // Update profile image if new one is selected
-      if (previewImage) {
-        updatedProfile.profile = previewImage;
+      formData.append("data", JSON.stringify(updatePayload));
+
+      if (editFormData.profile) {
+        formData.append("image", editFormData.profile);
       }
 
-      setProfileData(updatedProfile);
+      const response = await updateProfile(formData).unwrap();
 
-      toast.success('Profile updated successfully');
-      addActivityLog('Profile Updated', 'Profile information was updated', User);
-      setIsEditDialogOpen(false);
-      setPreviewImage(null);
-    } catch (error) {
-      toast.error('Failed to update profile');
+      if (response.success) {
+        toast.success(response.message || 'Profile updated successfully');
+        setIsEditDialogOpen(false);
+        setPreviewImage(null);
+        refetch(); // Refresh profile data
+      } else {
+        toast.error(response.message || 'Failed to update profile');
+      }
+
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Failed to update profile');
       console.error('Update profile error:', error);
-    } finally {
-      setIsUpdatingProfile(false);
     }
   };
 
   const validatePasswordFields = () => {
-    const errors = { oldPassword: '', newPassword: '' };
+    const errors = { oldPassword: '', newPassword: '', confirmPassword: '' };
     let isValid = true;
 
     if (!oldPassword.trim()) {
@@ -204,6 +107,14 @@ export default function UserProfilePage() {
       isValid = false;
     }
 
+    if (!confirmPassword.trim()) {
+      errors.confirmPassword = 'Confirm password is required';
+      isValid = false;
+    } else if (newPassword !== confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+      isValid = false;
+    }
+
     setPasswordErrors(errors);
     return isValid;
   };
@@ -213,25 +124,25 @@ export default function UserProfilePage() {
       return;
     }
 
-    setIsResettingPassword(true);
-
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
     try {
-      if (oldPassword !== 'demo123') {
-        toast.error('Old password is incorrect');
-        return;
+      const response = await updatePassword({
+        currentPassword: oldPassword,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword
+      }).unwrap();
+
+      if (response.success) {
+        toast.success(response.message || 'Password changed successfully');
+        setOldPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setPasswordErrors({ oldPassword: '', newPassword: '', confirmPassword: '' });
+      } else {
+        toast.error(response.message || 'Failed to change password');
       }
-      toast.success('Password changed successfully');
-      addActivityLog('Security Settings Updated', 'Password was changed', Shield);
-      setOldPassword('');
-      setNewPassword('');
-      setPasswordErrors({ oldPassword: '', newPassword: '' });
-    } catch (error) {
-      toast.error('Failed to change password');
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Failed to change password');
       console.error('Password change error:', error);
-    } finally {
-      setIsResettingPassword(false);
     }
   };
 
@@ -262,16 +173,25 @@ export default function UserProfilePage() {
     }
   }, [newPassword, passwordErrors.newPassword]);
 
+  useEffect(() => {
+    if (confirmPassword && passwordErrors.confirmPassword) {
+      setPasswordErrors(prev => ({ ...prev, confirmPassword: '' }));
+    }
+  }, [confirmPassword, passwordErrors.confirmPassword]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading profile...</div>
+        <div className="text-lg text-white">Loading profile...</div>
       </div>
     );
   }
 
   // Get profile image URL - use default if no profile image
-  const profileImageUrl = profileData?.profile || '/default-avatar.png';
+  // Assuming 'image' field exists in response based on car API patterns, otherwise fallback
+  const profileImageUrl = profileData?.image
+    ? (profileData.image.startsWith('http') ? profileData.image : `${baseURL}${profileData.image}`)
+    : '/default-avatar.png'; // Make sure this asset exists or use a web placeholder
 
   return (
     <div className="">
@@ -283,19 +203,20 @@ export default function UserProfilePage() {
               {/* Profile Image */}
               <div className="w-32 h-32 rounded-full overflow-hidden shrink-0 border-2 border-gray-200">
                 <Image
-                  src={profileImageUrl.startsWith('data:') ? profileImageUrl : profileImageUrl}
+                  src={previewImage || profileImageUrl}
                   alt="Profile"
-                  width={1000}
-                  height={1000}
+                  width={128}
+                  height={128}
                   className="w-full h-full object-cover"
+                  unoptimized // Add this to bypass optimization for external URLs if needed
                 />
               </div>
 
               {/* Profile Info Grid */}
               <div className="grid grid-cols-3 gap-x-16 gap-y-6 flex-1">
                 <div>
-                  <div className="text-sm  text-white mb-1">First Name</div>
-                  <div className="text-base font-medium text-gray-300">{profileData?.fullName || 'N/A'}</div>
+                  <div className="text-sm  text-white mb-1">Full Name</div>
+                  <div className="text-base font-medium text-gray-300">{profileData?.name || 'N/A'}</div>
                 </div>
                 <div>
                   <div className="text-sm text-white mb-1">Role</div>
@@ -307,11 +228,11 @@ export default function UserProfilePage() {
                 </div>
                 <div>
                   <div className="text-sm text-white mb-1">Phone Number</div>
-                  <div className="text-base font-medium text-gray-300">{profileData?.phone || 'N/A'}</div>
+                  <div className="text-base font-medium text-gray-300">{profileData?.contact || 'N/A'}</div>
                 </div>
                 <div>
                   <div className="text-sm text-white mb-1">Location</div>
-                  <div className="text-base font-medium text-gray-300">{profileData?.location || 'N/A'}</div>
+                  <div className="text-base font-medium text-gray-300">{profileData?.address || 'N/A'}</div>
                 </div>
               </div>
             </div>
@@ -328,49 +249,87 @@ export default function UserProfilePage() {
 
         {/* Password Section */}
         <div className="bg-[#1C2936] rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex items-start justify-between">
-            <div className="flex flex-col gap-4 w-full mr-4">
-              <div className='grid grid-cols-2 gap-6'>
-                <div className='w-full'>
-                  <div className="text-base text-white font-semibold mb-3">Old Password</div>
+          <div className="flex flex-col gap-6 w-full">
+            <h3 className="text-xl font-semibold text-white mb-2">Change Password</h3>
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+              <div className='w-full'>
+                <div className="text-sm font-medium text-gray-300 mb-2">Old Password</div>
+                <div className="relative">
                   <Input
-                    type="password"
-                    placeholder="Enter your old password here..."
-                    className={`w-full text-white placeholder:text-white ${passwordErrors.oldPassword ? 'border-red-500' : ''}`}
+                    type={showPassword.old ? "text" : "password"}
+                    placeholder="Enter current password..."
+                    className={`w-full text-white placeholder:text-gray-500 bg-[#2D3748] border-none focus:ring-1 focus:ring-cyan-400 h-10 pr-10 ${passwordErrors.oldPassword ? 'border-2 border-red-500' : ''}`}
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
                   />
-                  {passwordErrors.oldPassword && (
-                    <p className="text-red-500 text-sm mt-1">{passwordErrors.oldPassword}</p>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility('old')}
+                    className="absolute right-3 cursor-pointer top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                  >
+                    {showPassword.old ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
-                <div className='w-full'>
-                  <div className="text-base font-semibold mb-3 text-white">New Password</div>
+                {passwordErrors.oldPassword && (
+                  <p className="text-red-500 text-xs mt-1">{passwordErrors.oldPassword}</p>
+                )}
+              </div>
+              <div className='w-full'>
+                <div className="text-sm font-medium text-gray-300 mb-2">New Password</div>
+                <div className="relative">
                   <Input
-                    type="password"
-                    placeholder="Enter your new password here..."
-                    className={`w-full text-white placeholder:text-white ${passwordErrors.newPassword ? 'border-red-500' : ''}`}
+                    type={showPassword.new ? "text" : "password"}
+                    placeholder="Enter new password..."
+                    className={`w-full text-white placeholder:text-gray-500 bg-[#2D3748] border-none focus:ring-1 focus:ring-cyan-400 h-10 pr-10 ${passwordErrors.newPassword ? 'border-2 border-red-500' : ''}`}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                   />
-                  {passwordErrors.newPassword && (
-                    <p className="text-red-500 text-sm mt-1">{passwordErrors.newPassword}</p>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility('new')}
+                    className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                  >
+                    {showPassword.new ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
+                {passwordErrors.newPassword && (
+                  <p className="text-red-500 text-xs mt-1">{passwordErrors.newPassword}</p>
+                )}
+              </div>
+              <div className='w-full'>
+                <div className="text-sm font-medium text-gray-300 mb-2">Confirm Password</div>
+                <div className="relative">
+                  <Input
+                    type={showPassword.confirm ? "text" : "password"}
+                    placeholder="Confirm new password..."
+                    className={`w-full text-white placeholder:text-gray-500 bg-[#2D3748] border-none focus:ring-1 focus:ring-cyan-400 h-10 pr-10 ${passwordErrors.confirmPassword ? 'border-2 border-red-500' : ''}`}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility('confirm')}
+                    className="absolute right-3 cursor-pointer top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                  >
+                    {showPassword.confirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {passwordErrors.confirmPassword && (
+                  <p className="text-red-500 text-xs mt-1">{passwordErrors.confirmPassword}</p>
+                )}
               </div>
             </div>
+          </div>
+          <div className="flex justify-end mt-8">
             <Button
-              className="text-white px-6 mt-9 shrink-0"
+              className="text-white px-6 bg-cyan-600 hover:bg-cyan-700 transition-colors"
               onClick={handlePasswordChange}
-              disabled={isResettingPassword}
+              disabled={isUpdatingPassword}
             >
-              {isResettingPassword ? 'Changing...' : 'Change password'}
+              {isUpdatingPassword ? 'Changing...' : 'Change Password'}
             </Button>
           </div>
         </div>
-
-        {/* Security Section */}
-
 
       </div>
 
@@ -413,6 +372,7 @@ export default function UserProfilePage() {
                     width={96}
                     height={96}
                     className="w-full h-full object-cover text-white"
+                    unoptimized
                   />
                 </div>
                 <div>
@@ -430,69 +390,36 @@ export default function UserProfilePage() {
               <p className="text-xs text-gray-100 mt-1">Upload a new profile picture (optional)</p>
             </div>
 
-            {/* Location and Date of Birth Row */}
+            {/* Location and Phone Row */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="location" className="text-sm font-medium mb-2 block text-white">
-                  Location
+                  Location (Address)
                 </Label>
                 <Input
                   id="location"
                   value={editFormData.location}
                   onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
                   className="w-full text-white placeholder:text-white"
-                  placeholder="e.g., bangladesh"
+                  placeholder="e.g., Dhaka, Bangladesh"
                 />
               </div>
               <div>
-                <Label htmlFor="dateOfBirth" className="text-sm font-medium mb-2 block text-white">
-                  Date of Birth
+                <Label htmlFor="phone" className="text-sm font-medium mb-2 block text-white">
+                  Phone Number
                 </Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full bg-[#1C2936] text-white hover:text-white hover:bg-[#1C2936] justify-start text-left font-normal",
-                        !editFormData.dateOfBirth && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {editFormData.dateOfBirth ? (
-                        format(
-                          editFormData.dateOfBirth instanceof Date
-                            ? editFormData.dateOfBirth
-                            : new Date(editFormData.dateOfBirth),
-                          "PPP"
-                        )
-                      ) : (
-                        <span className='text-white'>Pick a date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 text-white" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={
-                        editFormData.dateOfBirth
-                          ? (editFormData.dateOfBirth instanceof Date
-                            ? editFormData.dateOfBirth
-                            : new Date(editFormData.dateOfBirth))
-                          : undefined
-                      }
-                      onSelect={(date) =>
-                        setEditFormData({ ...editFormData, dateOfBirth: date || '' })
-                      }
-                      initialFocus
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
-                      className="p-3 pointer-events-auto text-black"
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Input
+                  id="phone"
+                  value={editFormData.phone}
+                  onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                  className="w-full text-white placeholder:text-white"
+                  placeholder="Enter phone number"
+                />
               </div>
             </div>
+            {/* Date of Birth input removed as API response didn't explicitly show it, but kept support in map just in case. 
+                Replacing with Phone number as that's more common in the seen response ("contact")
+            */}
           </div>
 
           {/* Dialog Footer Buttons */}

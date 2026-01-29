@@ -6,11 +6,11 @@ import {
   AvatarImage,
 } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Filter, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Input } from '../../../../components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../components/ui/select';
 import { useGetAllCarQuery } from '../../../../features/car/carApi';
+import { CustomLoading } from '../../../../hooks/CustomLoading';
 import { baseURL } from '../../../../utils/BaseURL';
 
 // Car Interface based on API response
@@ -141,11 +141,7 @@ export default function UserManagement() {
 
   // Loading state
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <CustomLoading />
   }
 
   return (

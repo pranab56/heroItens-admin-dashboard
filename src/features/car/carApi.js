@@ -9,6 +9,7 @@ export const carApi = baseApi.injectEndpoints({
         url: "/car/all-car",
         method: "GET",
       }),
+      providesTags: ["car"],
     }),
 
     approveCar: builder.mutation({
@@ -16,6 +17,7 @@ export const carApi = baseApi.injectEndpoints({
         url: `/car/${id}`,
         method: "PATCH",
       }),
+      invalidatesTags: ["car"],
     }),
 
     carDetails: builder.query({
@@ -23,6 +25,7 @@ export const carApi = baseApi.injectEndpoints({
         url: `/car/${id}`,
         method: "GET",
       }),
+      invalidatesTags: ["car"],
     }),
 
     resetCar: builder.mutation({
@@ -30,6 +33,7 @@ export const carApi = baseApi.injectEndpoints({
         url: `/ranking/${id}`,
         method: "PATCH",
       }),
+      invalidatesTags: ["car"],
     }),
 
   }),

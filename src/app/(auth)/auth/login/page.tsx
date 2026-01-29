@@ -1,5 +1,6 @@
 "use client";
 
+import { jwtDecode } from "jwt-decode";
 import { Eye, EyeOff, Lock, LogIn, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -40,6 +41,9 @@ export default function LoginPage() {
     password: false
   });
   const router = useRouter();
+
+
+
   const [Login, { isLoading }] = useLoginMutation();
 
   const validateEmail = (email: string): boolean => {
@@ -79,6 +83,8 @@ export default function LoginPage() {
         // Save token to storage
         if (response.data) {
           saveToken(response?.data?.token);
+          const decoded = jwtDecode(response?.data?.token);
+          localStorage.setItem("HeroItemsAdminId", decoded?.id);
           toast.success(response.message || 'Login successful!');
           await new Promise(resolve => setTimeout(resolve, 800));
           router.push('/');

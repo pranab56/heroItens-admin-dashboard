@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import toast from 'react-hot-toast';
 import TipTapEditor from '../../../../TipTapEditor/TipTapEditor';
 import { useGetPrivacyPolicyQuery, useUpdatePrivacyPolicyMutation } from '../../../../features/settings/settingsApi';
+import { CustomLoading } from '../../../../hooks/CustomLoading';
 
 // Main Policy Component
 function PolicyEditor() {
@@ -50,11 +51,7 @@ function PolicyEditor() {
 
   // Show loading state
   if (isPrivacyPolicyLoading && !initialContentLoaded) {
-    return (
-      <div className="text-white p-6 flex justify-center items-center min-h-[400px]">
-        <div className="text-gray-400">Loading privacy policy...</div>
-      </div>
-    );
+    return <CustomLoading />
   }
 
   return (
