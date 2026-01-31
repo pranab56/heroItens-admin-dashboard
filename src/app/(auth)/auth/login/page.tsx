@@ -79,7 +79,7 @@ export default function LoginPage() {
         };
 
         const response = await Login(credentials).unwrap() as LoginResponse;
-        console.log(response);
+
 
         // Save token to storage
         if (response.data) {
