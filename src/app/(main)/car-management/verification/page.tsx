@@ -7,8 +7,7 @@ import {
 } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertTriangle, Check, Eye, Filter, Search, X } from 'lucide-react';
+import { AlertTriangle, Check, Eye, Search, X } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useApproveCarMutation, useGetAllCarQuery } from '../../../../features/car/carApi';
@@ -309,7 +308,7 @@ export default function CarManagement() {
           />
         </div>
 
-        <div className="w-full md:w-auto relative h-full">
+        {/* <div className="w-full md:w-auto relative h-full">
           <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 z-10" size={20} />
           <Select onValueChange={() => { }}>
             <SelectTrigger className="w-full md:w-[200px] h-20 py-[23px] bg-[#0d1829] border-gray-700 text-white pl-12 rounded-lg cursor-pointer">
@@ -322,7 +321,7 @@ export default function CarManagement() {
               <SelectItem value="REJECTED">Rejected</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </div> */}
       </div>
 
       {/* Cars Table */}

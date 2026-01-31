@@ -6,6 +6,8 @@ import { Bell, ChevronDown } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useGetAllNotificationQuery } from '../../features/notification/notificationApi';
+import { useGetMyProfileQuery } from '../../features/profile/profileApi';
+import { baseURL } from '../../utils/BaseURL';
 
 export default function Header() {
   const unreadCount = 1; // Example unread count
@@ -14,6 +16,14 @@ export default function Header() {
   const userImage = "https://api.dicebear.com/7.x/avataaars/svg?seed=Jane";
   const router = useRouter();
   const { data: apiResponse, isLoading } = useGetAllNotificationQuery({});
+  const { data: profileDataResponse, isLoading: profileDataLoading, refetch } = useGetMyProfileQuery(
+    typeof window !== 'undefined' ? localStorage.getItem("HeroItemsAdminId") : null,
+    { skip: typeof window === 'undefined' || !localStorage.getItem("HeroItemsAdminId") }
+  );
+
+  console.log("profileDataResponse", profileDataResponse?.data)
+
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -80,21 +90,21 @@ export default function Header() {
               onClick={handleProfileClick}
               className="flex items-center gap-3 rounded-lg text-white bg-gray-600 hover:bg-none px-4 py-2 transition-colors cursor-pointer"
             >
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={userImage} alt={userName} />
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={baseURL + profileDataResponse?.data?.image} alt={profileDataResponse?.data?.name} />
                 <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
-                  {userName
+                  {profileDataResponse?.data?.name
                     .split(" ")
-                    .map((n) => n[0])
+                    .map((n: string) => n[0])
                     .join("")
                     .toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col items-start">
                 <span className="text-sm font-semibold text-white">
-                  {userName}
+                  {profileDataResponse?.data?.name}
                 </span>
-                <span className="text-xs text-white">{userRole}</span>
+                <span className="text-xs text-white">{profileDataResponse?.data?.role}</span>
               </div>
               <ChevronDown
                 className={`h-4 w-4 text-gray-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''
