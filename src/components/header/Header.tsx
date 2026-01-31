@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Bell, ChevronDown } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { useGetAllNotificationQuery } from '../../features/notification/notificationApi';
 
 export default function Header() {
   const unreadCount = 1; // Example unread count
@@ -12,7 +13,7 @@ export default function Header() {
   const userRole = "Admin";
   const userImage = "https://api.dicebear.com/7.x/avataaars/svg?seed=Jane";
   const router = useRouter();
-
+  const { data: apiResponse, isLoading } = useGetAllNotificationQuery({});
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -62,12 +63,12 @@ export default function Header() {
           <div className="relative">
             <button onClick={() => router.push("/notifications")} className="relative flex cursor-pointer h-12 w-12 items-center justify-center rounded-lg  text-white bg-gray-600 hover:bg-gray-600 transition-colors">
               <Bell className="h-6 w-6 text-white" />
-              {unreadCount > 0 && (
+              {apiResponse?.data?.unreadNotification > 0 && (
                 <Badge
                   className="absolute -top-1 -right-1 h-5 min-w-5 rounded-full px-1.5 text-xs font-semibold"
                   variant="destructive"
                 >
-                  {unreadCount > 99 ? "99+" : unreadCount}
+                  {apiResponse?.data?.unreadNotification > 99 ? "99+" : apiResponse?.data?.unreadNotification}
                 </Badge>
               )}
             </button>

@@ -18,7 +18,7 @@ interface ApiError {
 interface LoginResponse {
   message?: string;
   data?: {
-    accessToken: string;
+    token: string;
   };
 }
 
@@ -79,11 +79,12 @@ export default function LoginPage() {
         };
 
         const response = await Login(credentials).unwrap() as LoginResponse;
+        console.log(response);
 
         // Save token to storage
         if (response.data) {
-          saveToken(response?.data?.accessToken);
-          const decoded = jwtDecode<{ id: string }>(response?.data?.accessToken);
+          saveToken(response?.data?.token);
+          const decoded = jwtDecode<{ id: string }>(response?.data?.token);
           localStorage.setItem("HeroItemsAdminId", decoded?.id);
           toast.success(response.message || 'Login successful!');
           await new Promise(resolve => setTimeout(resolve, 800));

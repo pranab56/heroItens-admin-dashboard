@@ -4,11 +4,19 @@ import { baseApi } from "../../utils/apiBaseQuery";
 export const notificationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAllNotification: builder.query({
-      query: ({ page, limit }) => ({
-        url: `/notification?page=${page}&limit=${limit}`,
-        method: "GET",
-      }),
+      query: ({ page, limit } = {}) => {
+        const params = new URLSearchParams();
+
+        if (page) params.append("page", page.toString());
+        if (limit) params.append("limit", limit.toString());
+
+        return {
+          url: `/notification?${params.toString()}`,
+          method: "GET",
+        };
+      },
     }),
+
 
   }),
 });

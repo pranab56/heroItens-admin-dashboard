@@ -204,6 +204,7 @@ export default function CategoryManagement() {
             <Plus size={20} />
             Add New Product
           </Button>
+          
         </div>
 
         {/* Products Table */}
