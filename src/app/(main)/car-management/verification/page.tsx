@@ -154,10 +154,7 @@ export default function CarManagement() {
     if (!selectedCar) return;
 
     try {
-      const response = await approveCar({
-        carId: selectedCar._id,
-        action: 'APPROVE'
-      }).unwrap();
+      const response = await approveCar(selectedCar._id).unwrap();
 
       if (response.success) {
         // Update local state
@@ -189,10 +186,7 @@ export default function CarManagement() {
     if (!selectedCar) return;
 
     try {
-      const response = await approveCar({
-        carId: selectedCar._id,
-        action: 'REJECT'
-      }).unwrap();
+      const response = await approveCar(selectedCar._id).unwrap();
 
       if (response.success) {
         // Update local state
