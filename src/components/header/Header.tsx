@@ -2,18 +2,17 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { logout } from "@/features/auth/authSlice";
 import { Bell, ChevronDown } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { useDispatch } from "react-redux";
+
 import { useGetAllNotificationQuery } from '../../features/notification/notificationApi';
 import { useGetMyProfileQuery } from '../../features/profile/profileApi';
 import { baseURL } from '../../utils/BaseURL';
 
 export default function Header() {
-  const unreadCount = 1; // Example unread count
-  const userName = "Jane Cooper";
-  const userRole = "Admin";
-  const userImage = "https://api.dicebear.com/7.x/avataaars/svg?seed=Jane";
   const router = useRouter();
   const { data: apiResponse, isLoading } = useGetAllNotificationQuery({});
   const { data: profileDataResponse, isLoading: profileDataLoading, refetch } = useGetMyProfileQuery(
@@ -41,6 +40,8 @@ export default function Header() {
     };
   }, []);
 
+  const dispatch = useDispatch();
+
   const handleProfileClick = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
@@ -51,11 +52,12 @@ export default function Header() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("HeroItemsAdmin");
+    dispatch(logout());
     localStorage.removeItem("HeroItemsAdminId");
     setIsDropdownOpen(false);
-    router.push("/auth/login");
+    router.replace("/auth/login");
   };
+
 
   return (
     <div className="w-full">
@@ -71,7 +73,7 @@ export default function Header() {
         <div className="flex items-center gap-4">
           {/* Notification Bell */}
           <div className="relative">
-            <button onClick={() => router.push("/notifications")} className="relative flex cursor-pointer h-12 w-12 items-center justify-center rounded-lg  text-white bg-gray-600 hover:bg-gray-600 transition-colors">
+            <button onClick={() => router.push("/notifications")} className="relative flex cursor-pointer h-13 w-13 items-center justify-center rounded-lg  text-white bg-gray-600 hover:bg-gray-600 transition-colors">
               <Bell className="h-6 w-6 text-white" />
               {apiResponse?.data?.unreadNotification > 0 && (
                 <Badge
@@ -90,7 +92,7 @@ export default function Header() {
               onClick={handleProfileClick}
               className="flex items-center gap-3 rounded-lg text-white bg-gray-600 hover:bg-none px-4 py-2 transition-colors cursor-pointer"
             >
-              <Avatar className="h-12 w-12">
+              <Avatar className="h-10 w-12">
                 <AvatarImage src={baseURL + profileDataResponse?.data?.image} alt={profileDataResponse?.data?.name} />
                 <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
                   {profileDataResponse?.data?.name

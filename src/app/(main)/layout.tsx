@@ -7,12 +7,11 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import "../globals.css";
 
 export const metadata: Metadata = {
-  title: "Peterson Dashboard",
-  description: "Peterson Dashboard",
+  title: "My Garage Admin Dashboard",
+  description: "My Garage Admin Dashboard",
   icons: {
-    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    icon: [{ url: "/Logo.png", type: "image/png" }],
   },
-  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({

@@ -9,6 +9,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { logout } from "@/features/auth/authSlice";
 import {
   Car,
   ChevronDown,
@@ -27,6 +28,9 @@ import Image from 'next/image';
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useState } from "react";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+
 
 type SidebarItem = {
   name: string;
@@ -79,6 +83,7 @@ const sidebars: SidebarItem[] = [
 export default function OptimusSidebar() {
   const pathname = usePathname();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const dispatch = useDispatch();
   const router = useRouter();
 
   const isActive = (path: string) => {
@@ -93,10 +98,11 @@ export default function OptimusSidebar() {
   };
 
   const handleLogout = () => {
-    // Add your logout logic here
-    router.push("/auth/login");
-    console.log("Logout clicked");
+    dispatch(logout()); // This clears state and removes token from storage/cookies
+    toast.success("Logged out successfully");
+    router.replace("/auth/login");
   };
+
 
   return (
     <Sidebar className="border-none">

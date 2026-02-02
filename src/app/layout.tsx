@@ -12,10 +12,10 @@ const geistSans = Geist({
 
 
 export const metadata: Metadata = {
-  title: "HeroItems Admin Dashboard",
-  description: "Peterson Dashboard",
+  title: "My Garage Admin Dashboard",
+  description: "My Garage Admin Dashboard",
   icons: {
-    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    icon: [{ url: "/Logo.png", type: "image/png" }],
   },
   manifest: "/site.webmanifest",
 };
@@ -34,13 +34,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable}  antialiased h-screen`}
       >
-        {/* <ProtectedRoute> */}
         <ClientLayout>
           {children}
           <Toaster />
         </ClientLayout>
-        {/* </ProtectedRoute> */}
       </body>
+
     </html>
   );
 }
