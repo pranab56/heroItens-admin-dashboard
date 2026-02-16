@@ -126,20 +126,20 @@ export default function GlobalSystemSettings() {
   const displayImage = logoPreview || existingLogoUrl;
 
   return (
-    <div className="text-white p-6">
+    <div className="text-white p-4 sm:p-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold mb-3">Global System Settings</h1>
-        <p className="text-gray-400 text-base">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-semibold mb-2 md:mb-3">Global System Settings</h1>
+        <p className="text-gray-400 text-sm md:text-base">
           Manage your platform's core identity, global behaviors, and community voting preferences.
         </p>
       </div>
 
       {/* Settings Card */}
-      <div className="bg-[#1C2936] rounded-lg p-8">
+      <div className="bg-[#1C2936] rounded-lg p-5 sm:p-8">
         {/* General Information Section */}
-        <div className="mb-10">
-          <h2 className="text-xl font-medium mb-6">General Information</h2>
+        <div className="mb-8 md:mb-10">
+          <h2 className="text-lg md:text-xl font-medium mb-6">General Information</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Platform Name */}
@@ -210,10 +210,10 @@ export default function GlobalSystemSettings() {
 
         {/* Voting Rules & Limits Section */}
         <div className="mb-8">
-          <h2 className="text-xl font-medium mb-6">Voting Rules & Limits</h2>
+          <h2 className="text-lg md:text-xl font-medium mb-6">Voting Rules & Limits</h2>
 
           {/* Daily Vote Limit */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="text-base font-medium mb-1">Daily Vote Limit per User</h3>
               <p className="text-sm text-gray-400">
@@ -222,10 +222,10 @@ export default function GlobalSystemSettings() {
             </div>
 
             {/* Counter */}
-            <div className="flex items-center gap-3 border border-gray-500 rounded-lg px-4 py-2">
+            <div className="flex items-center justify-center sm:justify-start gap-3 border border-gray-500 rounded-lg px-4 py-2 w-fit">
               <button
                 onClick={decrementVoteLimit}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors p-1"
                 type="button"
               >
                 <Minus className="w-5 h-5 cursor-pointer" />
@@ -233,7 +233,7 @@ export default function GlobalSystemSettings() {
               <span className="text-2xl font-semibold w-12 text-center">{voteLimit}</span>
               <button
                 onClick={incrementVoteLimit}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors p-1"
                 type="button"
               >
                 <Plus className="w-5 h-5 cursor-pointer" />
@@ -243,11 +243,11 @@ export default function GlobalSystemSettings() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-4 pt-6">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 pt-8">
           <Button
             onClick={handleCancel}
             variant="outline"
-            className="bg-[#3a2832] border-[#3a2832] text-red-400 hover:bg-[#4a3842] hover:text-red-300 px-8 h-11"
+            className="w-full sm:w-auto bg-[#3a2832] border-[#3a2832] text-red-400 hover:bg-[#4a3842] hover:text-red-300 px-8 h-12"
             type="button"
             disabled={isLoading}
           >
@@ -255,7 +255,7 @@ export default function GlobalSystemSettings() {
           </Button>
           <Button
             onClick={handleUpdateGlobalSettings}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 h-11"
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 h-12"
             type="button"
             disabled={isLoading}
           >

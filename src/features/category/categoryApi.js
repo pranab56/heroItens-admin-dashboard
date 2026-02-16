@@ -10,6 +10,16 @@ export const settingsApi = baseApi.injectEndpoints({
         method: "POST",
         body: data
       }),
+      invalidatesTags: ["category"],
+    }),
+
+    createModal: builder.mutation({
+      query: (data) => ({
+        url: "/model",
+        method: "POST",
+        body: data
+      }),
+      invalidatesTags: ["category"],
     }),
 
     getAllCategory: builder.query({
@@ -17,6 +27,7 @@ export const settingsApi = baseApi.injectEndpoints({
         url: "/category/all",
         method: "GET",
       }),
+      providesTags: ["category"],
     }),
 
     updateCategory: builder.mutation({
@@ -25,6 +36,7 @@ export const settingsApi = baseApi.injectEndpoints({
         method: "PUT",
         body: data
       }),
+      invalidatesTags: ["category"],
     }),
 
     deleteCategory: builder.mutation({
@@ -32,6 +44,7 @@ export const settingsApi = baseApi.injectEndpoints({
         url: `/category/${id}`,
         method: "DELETE",
       }),
+      invalidatesTags: ["category"],
     }),
   }),
 });
@@ -40,5 +53,6 @@ export const {
   useCreateCategoryMutation,
   useGetAllCategoryQuery,
   useUpdateCategoryMutation,
-  useDeleteCategoryMutation
+  useDeleteCategoryMutation,
+  useCreateModalMutation,
 } = settingsApi;

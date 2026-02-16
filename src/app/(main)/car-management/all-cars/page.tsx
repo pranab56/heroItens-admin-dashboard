@@ -146,14 +146,14 @@ export default function UserManagement() {
 
   return (
     <div className="">
-      <div className="flex flex-col bg-[#1C2936] p-4 rounded-lg md:flex-row gap-4 mb-6">
-        <div className="flex w-5/12 relative">
+      <div className="flex flex-col bg-[#1C2936] p-4 rounded-lg md:flex-row items-center gap-4 mb-6">
+        <div className="flex w-full md:w-5/12 relative">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
           <Input
             placeholder="Search here..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="pl-12 h-12 bg-[#0d1829] border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
+            className="pl-12 h-12 bg-[#0d1829] border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg w-full"
           />
         </div>
 
@@ -174,9 +174,9 @@ export default function UserManagement() {
 
       <div className="">
         {/* Cars List */}
-        <div className="">
+        <div className="overflow-x-auto rounded-t-xl">
           {/* Header Row */}
-          <div className="bg-[#243b5e] rounded-t-xl px-6 py-4 grid grid-cols-5 gap-4 text-sm font-medium text-gray-300">
+          <div className="bg-[#243b5e] px-6 py-4 grid grid-cols-5 gap-4 text-sm font-medium text-gray-300 min-w-[800px]">
             <div>Car Image</div>
             <div>Owner Name</div>
             <div>Date</div>
@@ -197,46 +197,48 @@ export default function UserManagement() {
               }
             </div>
           ) : (
-            currentCars.map((car) => (
-              <div
-                key={car._id}
-                className="bg-[#1C2936] hover:bg-[#2a4470] border-b border-gray-700 px-6 py-4 grid grid-cols-5 gap-4 items-center transition-colors"
-              >
-                {/* Car Image */}
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12 rounded-lg">
-                    <AvatarImage
-                      src={baseURL + car.images?.[0] || "/placeholder-car.jpg"}
-                      alt={`${car.manufacturer} ${car.modelName}`}
-                      className="rounded-lg object-cover"
-                    />
-                    <AvatarFallback className="rounded-lg bg-gray-700 text-white">
-                      {car.manufacturer?.substring(0, 1) || 'C'}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
+            <div className="min-w-[800px]">
+              {currentCars.map((car) => (
+                <div
+                  key={car._id}
+                  className="bg-[#1C2936] hover:bg-[#2a4470] border-b border-gray-700 px-6 py-4 grid grid-cols-5 gap-4 items-center transition-colors"
+                >
+                  {/* Car Image */}
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10 md:h-12 md:w-12 rounded-lg shrink-0">
+                      <AvatarImage
+                        src={baseURL + car.images?.[0] || "/placeholder-car.jpg"}
+                        alt={`${car.manufacturer} ${car.modelName}`}
+                        className="rounded-lg object-cover"
+                      />
+                      <AvatarFallback className="rounded-lg bg-gray-700 text-white">
+                        {car.manufacturer?.substring(0, 1) || 'C'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
 
-                {/* Owner Name */}
-                <div className="text-white text-sm font-medium">
-                  {getOwnerName(car)}
-                </div>
+                  {/* Owner Name */}
+                  <div className="text-white text-sm font-medium truncate">
+                    {getOwnerName(car)}
+                  </div>
 
-                {/* Date */}
-                <div className="text-gray-300 text-sm">
-                  {formatDate(car.createdAt)}
-                </div>
+                  {/* Date */}
+                  <div className="text-gray-300 text-sm">
+                    {formatDate(car.createdAt)}
+                  </div>
 
-                {/* Manufacturer */}
-                <div className="text-gray-300 text-sm">
-                  {car.manufacturer}
-                </div>
+                  {/* Manufacturer */}
+                  <div className="text-gray-300 text-sm truncate">
+                    {car.manufacturer}
+                  </div>
 
-                {/* Model */}
-                <div className="text-gray-300 text-sm">
-                  {car.modelName} {car.year}
+                  {/* Model */}
+                  <div className="text-gray-300 text-sm truncate">
+                    {car.modelName} {car.year}
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
 

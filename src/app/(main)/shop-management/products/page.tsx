@@ -193,7 +193,7 @@ export default function CategoryManagement() {
               placeholder="Search products..."
               value={searchQuery}
               onChange={handleSearchChange}
-              className="pl-10 h-12 bg-[#1C2936] border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
+              className="pl-10 h-12 bg-[#0d1829] border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg w-full"
             />
           </div>
 
@@ -204,60 +204,72 @@ export default function CategoryManagement() {
             <Plus size={20} />
             Add New Product
           </Button>
-          
+
         </div>
 
         {/* Products Table */}
-        <div className="rounded-xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-[#1C2936] px-6 py-4 grid grid-cols-4 gap-4 text-sm font-medium text-gray-300">
-            <div>Item Name</div>
-            <div>Point Cost</div>
-            <div>Status</div>
-            <div>Actions</div>
+        <div className="rounded-xl overflow-hidden border border-gray-700/50">
+          <div className="overflow-x-auto">
+            <div className="min-w-[800px]">
+              {/* Header */}
+              <div className="bg-[#243b5e] px-6 py-4 grid grid-cols-4 gap-4 text-sm font-medium text-gray-300">
+                <div>Item Name</div>
+                <div>Point Cost</div>
+                <div>Status</div>
+                <div className="flex justify-center">Actions</div>
+              </div>
+            </div>
           </div>
 
           {/* Rows */}
-          {isShopLoading ? (
-            <div className="bg-[#1C2936] p-8 text-center text-gray-400">Loading products...</div>
-          ) : currentProducts.length === 0 ? (
-            <div className="bg-[#1C2936] p-8 text-center text-gray-400">No products found</div>
-          ) : (
-            <div className="bg-[#1C2936]">
-              {currentProducts.map((product, index) => (
-                <div
-                  key={product._id}
-                  className={`hover:bg-[#233142] px-6 py-4 grid grid-cols-4 gap-4 items-center transition-colors ${index !== currentProducts.length - 1 ? 'border-b border-gray-700/50' : ''
-                    }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12 rounded-lg">
-                      <AvatarImage
-                        src={baseURL + product.image}
-                        alt={product.itemName}
-                        className="rounded-lg object-cover"
-                      />
-                    </Avatar>
-                    <div>
-                      <div className="text-white text-sm font-medium">{product.itemName}</div>
-                      <div className="text-gray-400 text-xs">Category: {product.categoryType}</div>
+          <div className="overflow-x-auto">
+            <div className="min-w-[800px]">
+              {isShopLoading ? (
+                <div className="bg-[#1C2936] p-8 text-center text-gray-400">Loading products...</div>
+              ) : currentProducts.length === 0 ? (
+                <div className="bg-[#1C2936] p-8 text-center text-gray-400">No products found</div>
+              ) : (
+                <div className="bg-[#1C2936]">
+                  {currentProducts.map((product, index) => (
+                    <div
+                      key={product._id}
+                      className={`hover:bg-[#233142] px-6 py-4 grid grid-cols-4 gap-4 items-center transition-colors ${index !== currentProducts.length - 1 ? 'border-b border-gray-700/50' : ''
+                        }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12 rounded-lg shrink-0">
+                          <AvatarImage
+                            src={baseURL + product.image}
+                            alt={product.itemName}
+                            className="rounded-lg object-cover"
+                          />
+                        </Avatar>
+                        <div className="min-w-0">
+                          <div className="text-white text-sm font-medium truncate">{product.itemName}</div>
+                          <div className="text-gray-400 text-xs truncate">Category: {product.categoryType}</div>
+                        </div>
+                      </div>
+
+                      <div className="text-white text-sm font-medium">{product.pointCost}</div>
+                      <div className="text-white text-sm font-medium">
+                        <span className={`px-2 py-1 rounded-full text-xs ${product.status === 'Active' ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
+                          {product.status}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-center">
+                        <Switch
+                          checked={product.status === 'Active'}
+                          onCheckedChange={() => handleToggleStatus(product._id)}
+                          className="data-[state=checked]:bg-blue-600 cursor-pointer"
+                        />
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="text-white text-sm font-medium">{product.pointCost}</div>
-                  <div className="text-white text-sm font-medium">{product.status}</div>
-
-                  <div>
-                    <Switch
-                      checked={product.status === 'Active'}
-                      onCheckedChange={() => handleToggleStatus(product._id)}
-                      className="data-[state=checked]:bg-blue-600 cursor-pointer"
-                    />
-                  </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
+          </div>
 
           {/* Pagination */}
           {filteredProducts.length > 0 && (

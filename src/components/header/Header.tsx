@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import { useGetAllNotificationQuery } from '../../features/notification/notificationApi';
 import { useGetMyProfileQuery } from '../../features/profile/profileApi';
 import { baseURL } from '../../utils/BaseURL';
+import { SidebarTrigger } from '../ui/sidebar';
 
 export default function Header() {
   const router = useRouter();
@@ -61,23 +62,27 @@ export default function Header() {
 
   return (
     <div className="w-full">
-      <header className="flex h-20 items-center justify-between px-8 bg-[#1C2936] text-white">
-        {/* Left side - Welcome text */}
-        <div>
-          <h1 className="text-2xl font-semibold">
+      <header className="flex h-16 md:h-20 items-center justify-between px-4 md:px-8 bg-[#1C2936] text-white">
+        {/* Left side - Welcome text & Sidebar Trigger */}
+        <div className="flex items-center gap-2 md:gap-4">
+          <SidebarTrigger className="md:hidden text-white hover:bg-gray-700" />
+          <h1 className="text-lg md:text-2xl font-semibold hidden sm:block">
             Welcome Back!
           </h1>
         </div>
 
         {/* Right side - Notification and Profile */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           {/* Notification Bell */}
           <div className="relative">
-            <button onClick={() => router.push("/notifications")} className="relative flex cursor-pointer h-13 w-13 items-center justify-center rounded-lg  text-white bg-gray-600 hover:bg-gray-600 transition-colors">
-              <Bell className="h-6 w-6 text-white" />
+            <button
+              onClick={() => router.push("/notifications")}
+              className="relative flex cursor-pointer h-10 w-10 md:h-13 md:w-13 items-center justify-center rounded-lg text-white bg-gray-600 hover:bg-gray-700 transition-colors"
+            >
+              <Bell className="h-5 w-5 md:h-6 md:w-6 text-white" />
               {apiResponse?.data?.unreadNotification > 0 && (
                 <Badge
-                  className="absolute -top-1 -right-1 h-5 min-w-5 rounded-full px-1.5 text-xs font-semibold"
+                  className="absolute -top-1 -right-1 h-4 min-w-4 md:h-5 md:min-w-5 rounded-full px-1 md:px-1.5 text-[10px] md:text-xs font-semibold"
                   variant="destructive"
                 >
                   {apiResponse?.data?.unreadNotification > 99 ? "99+" : apiResponse?.data?.unreadNotification}
@@ -90,26 +95,26 @@ export default function Header() {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={handleProfileClick}
-              className="flex items-center gap-3 rounded-lg text-white bg-gray-600 hover:bg-none px-4 py-2 transition-colors cursor-pointer"
+              className="flex items-center gap-2 md:gap-3 rounded-lg text-white bg-gray-600 hover:bg-gray-700 px-2 md:px-4 py-1.5 md:py-2 transition-colors cursor-pointer"
             >
-              <Avatar className="h-10 w-12">
+              <Avatar className="h-8 w-8 md:h-10 md:w-10">
                 <AvatarImage src={baseURL + profileDataResponse?.data?.image} alt={profileDataResponse?.data?.name} />
-                <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
+                <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold text-xs">
                   {profileDataResponse?.data?.name
-                    .split(" ")
+                    ?.split(" ")
                     .map((n: string) => n[0])
                     .join("")
-                    .toUpperCase()}
+                    .toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex flex-col items-start">
-                <span className="text-sm font-semibold text-white">
+              <div className="hidden md:flex flex-col items-start">
+                <span className="text-sm font-semibold text-white whitespace-nowrap">
                   {profileDataResponse?.data?.name}
                 </span>
-                <span className="text-xs text-white">{profileDataResponse?.data?.role}</span>
+                <span className="text-xs text-white uppercase">{profileDataResponse?.data?.role}</span>
               </div>
               <ChevronDown
-                className={`h-4 w-4 text-gray-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''
+                className={`h-4 w-4 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''
                   }`}
               />
             </button>

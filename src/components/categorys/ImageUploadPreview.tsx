@@ -1,3 +1,4 @@
+import { baseURL } from '@/utils/BaseURL';
 import { Upload, X } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
@@ -20,7 +21,8 @@ export const ImageUploadPreview = ({ image, onImageChange, onRemove }: ImageUplo
       };
       reader.readAsDataURL(image);
     } else if (typeof image === 'string') {
-      setPreview(image);
+      const imageUrl = image.startsWith('http') ? image : `${baseURL}${image}`;
+      setPreview(imageUrl);
     } else {
       setPreview('');
     }
@@ -98,6 +100,7 @@ export const ImageUploadPreview = ({ image, onImageChange, onRemove }: ImageUplo
               alt="Banner preview"
               fill
               className="object-cover"
+              unoptimized
             />
           </div>
           <div className="mt-4 flex items-center justify-center gap-2 text-sm text-blue-400">

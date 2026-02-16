@@ -241,7 +241,7 @@ export default function CarManagement() {
             placeholder="Search by car name, model, year or owner..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="pl-12 h-12  border-gray-500 placeholder:text-gray-300 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
+            className="pl-12 h-12 w-full border-gray-500 placeholder:text-gray-300 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
           />
         </div>
 
@@ -264,68 +264,75 @@ export default function CarManagement() {
       </div>
 
       {/* Cars Table */}
-      <div>
-        {/* Header */}
-        <div className="bg-[#243b5e] rounded-t-xl px-6 py-4 grid grid-cols-4 gap-4 text-sm font-medium text-gray-300">
-          <div>Rank</div>
-          <div>Car Name</div>
-          <div>Total Votes</div>
-          <div>Action</div>
-        </div>
-
-        {/* Rows */}
-        {currentCars.length === 0 ? (
-          <div className="bg-[#1C2936] py-12 text-center text-gray-500">
-            {cars.length === 0 ? "No cars found" : "No records found matching your criteria"}
+      <div className="overflow-x-auto rounded-t-xl">
+        <div className="min-w-[800px]">
+          {/* Header */}
+          <div className="bg-[#243b5e] px-6 py-4 grid grid-cols-4 gap-4 text-sm font-medium text-gray-300">
+            <div>Rank</div>
+            <div>Car Name</div>
+            <div>Total Votes</div>
+            <div className="flex justify-center">Action</div>
           </div>
-        ) : (
-          currentCars.map((car, index) => (
-            <div
-              key={car._id}
-              className="bg-[#1C2936] hover:bg-[#2a4470] border-b border-gray-700 px-6 py-4 grid grid-cols-4 gap-4 items-center transition-colors"
-            >
-              <div className="text-white text-sm font-medium">
-                #{car.ranking || startIndex + index + 1}
-              </div>
-              <div className='flex items-start gap-2'>
-                <Avatar className="h-10 w-20 rounded-lg">
-                  <AvatarImage
-                    src={getCarImage(car)}
-                    alt={getCarName(car)}
-                    className="rounded-lg object-cover"
-                  />
-                </Avatar>
-                <div>
-                  <div className="text-white text-sm font-medium">{getCarName(car)}</div>
-                  <div className="text-gray-400 text-xs">{getCarModelInfo(car)}</div>
-                  <div className="text-gray-500 text-xs mt-1">
-                    Owner: {car.userId?.name || 'Unknown'}
-                  </div>
-                  <div className={`text-xs mt-1 px-2 py-1 rounded-full inline-block ${car.status === 'APPROVED' ? 'bg-green-900/30 text-green-400' :
-                    car.status === 'PENDING' ? 'bg-yellow-900/30 text-yellow-400' :
-                      'bg-red-900/30 text-red-400'
-                    }`}>
-                    {car.status}
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <div className="min-w-[800px]">
+
+          {/* Rows */}
+          {currentCars.length === 0 ? (
+            <div className="bg-[#1C2936] py-12 text-center text-gray-500">
+              {cars.length === 0 ? "No cars found" : "No records found matching your criteria"}
+            </div>
+          ) : (
+            currentCars.map((car, index) => (
+              <div
+                key={car._id}
+                className="bg-[#1C2936] hover:bg-[#2a4470] border-b border-gray-700 px-6 py-4 grid grid-cols-4 gap-4 items-center transition-colors"
+              >
+                <div className="text-white text-sm font-medium">
+                  #{car.ranking || startIndex + index + 1}
+                </div>
+                <div className='flex items-start gap-2'>
+                  <Avatar className="h-10 w-20 rounded-lg">
+                    <AvatarImage
+                      src={getCarImage(car)}
+                      alt={getCarName(car)}
+                      className="rounded-lg object-cover"
+                    />
+                  </Avatar>
+                  <div>
+                    <div className="text-white text-sm font-medium">{getCarName(car)}</div>
+                    <div className="text-gray-400 text-xs">{getCarModelInfo(car)}</div>
+                    <div className="text-gray-500 text-xs mt-1">
+                      Owner: {car.userId?.name || 'Unknown'}
+                    </div>
+                    <div className={`text-xs mt-1 px-2 py-1 rounded-full inline-block ${car.status === 'APPROVED' ? 'bg-green-900/30 text-green-400' :
+                      car.status === 'PENDING' ? 'bg-yellow-900/30 text-yellow-400' :
+                        'bg-red-900/30 text-red-400'
+                      }`}>
+                      {car.status}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="text-white text-sm font-medium">
-                {car.votes || 0} votes
-              </div>
+                <div className="text-white text-sm font-medium">
+                  {car.votes || 0} votes
+                </div>
 
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleRejectClick(car)}
-                  className="p-2 cursor-pointer bg-red-600/20 hover:bg-red-600/30 rounded-lg transition-colors"
-                  title="Reset Votes"
-                >
-                  <RotateCw size={18} className="text-red-400" />
-                </button>
+                <div className="flex gap-2 justify-center">
+                  <button
+                    onClick={() => handleRejectClick(car)}
+                    className="p-2 cursor-pointer bg-red-600/20 hover:bg-red-600/30 rounded-lg transition-colors"
+                    title="Reset Votes"
+                  >
+                    <RotateCw size={18} className="text-red-400" />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))
-        )}
+            ))
+          )}
+        </div>
 
         {/* Pagination */}
         {filteredCars.length > 0 && (

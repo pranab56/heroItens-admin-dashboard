@@ -4,11 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useGetAllCategoryQuery } from '@/features/category/categoryApi';
 import { Plus, Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import CategoryTable from '../../../../components/categorys/CategoryTable';
 import CreateCategory from '../../../../components/categorys/CreateCategory';
 import DeleteCategory from '../../../../components/categorys/DeleteCategory';
-import EditCategory from '../../../../components/categorys/EditCategory';
 import { Category } from '../../../../components/categorys/types';
 import { CustomLoading } from '../../../../hooks/CustomLoading';
 
@@ -27,6 +27,7 @@ export default function CategoryManagement() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const router = useRouter();
 
   const itemsPerPage = 7;
 
@@ -60,12 +61,11 @@ export default function CategoryManagement() {
   };
 
   const handleAddCategory = () => {
-    setShowAddModal(true);
+    router.push('/car-management/add-category-model');
   };
 
   const handleEditCategory = (category: Category) => {
-    setSelectedCategory(category);
-    setShowEditModal(true);
+    router.push(`/car-management/add-category-model?editId=${category._id}`);
   };
 
   const handleDeleteCategory = (category: Category) => {
@@ -116,20 +116,20 @@ export default function CategoryManagement() {
   return (
     <div className="">
       {/* Search and Add Button */}
-      <div className="flex flex-col justify-between md:flex-row gap-4 mb-6 rounded-lg bg-[#1C2936] p-4">
-        <div className="flex w-6/12 relative">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 rounded-lg bg-[#1C2936] p-4">
+        <div className="flex w-full md:w-6/12 relative">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
           <Input
-            placeholder="Screen here"
+            placeholder="Search category..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="pl-12 h-12 bg-[#1C2936] border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
+            className="pl-12 h-12 bg-[#0d1829] border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg w-full"
           />
         </div>
 
         <Button
           onClick={handleAddCategory}
-          className="bg-blue-600 hover:bg-blue-700 text-white h-12 px-6 rounded-lg flex items-center gap-2"
+          className="bg-blue-600 hover:bg-blue-700 text-white h-12 px-6 rounded-lg flex items-center gap-2 w-full md:w-auto justify-center"
         >
           <Plus size={20} />
           Add New Category
@@ -162,12 +162,7 @@ export default function CategoryManagement() {
 
       {selectedCategory && (
         <>
-          <EditCategory
-            open={showEditModal}
-            onOpenChange={handleCloseModals}
-            category={selectedCategory}
-            refetch={refetch}
-          />
+
 
           <DeleteCategory
             open={showDeleteModal}

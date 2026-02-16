@@ -183,7 +183,7 @@ export default function AnalyticsLayout() {
     <div className="">
       <div className="space-y-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {statsData.map((stat) => (
             <StatsCard
               key={stat.id}
@@ -199,12 +199,12 @@ export default function AnalyticsLayout() {
         {/* User Growth Chart */}
         <Card className="bg-[#1C2936] border-none">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <h2 className="text-xl font-semibold text-white">User Growth</h2>
 
               {/* Filter Dropdown */}
-              <div className="relative group">
-                <button className="flex items-center gap-2 px-4 py-2 bg-[#1C2936] border border-slate-700 rounded-lg text-sm text-gray-300 hover:bg-[#2D3748] transition-colors">
+              <div className="relative group self-end sm:self-auto">
+                <button className="flex items-center gap-2 px-4 py-2 bg-[#1C2936] border border-slate-700 rounded-lg text-sm text-gray-300 hover:bg-[#2D3748] transition-colors whitespace-nowrap">
                   <Filter className="w-4 h-4" />
                   Filter by Months
                 </button>
@@ -309,31 +309,33 @@ export default function AnalyticsLayout() {
           <Card className="bg-[#1C2936] border-none">
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold text-white mb-6">Pending Verifications</h2>
-              <div className="space-y-4">
-                <div className="grid grid-cols-4 gap-4 text-sm text-gray-400 pb-3 border-b border-slate-700">
-                  <span>Car Image</span>
-                  <span>Owner Name</span>
-                  <span>Date</span>
-                  <span>Action</span>
+              <div className="overflow-x-auto pb-2">
+                <div className="space-y-4 min-w-[500px]">
+                  <div className="grid grid-cols-4 gap-4 text-sm text-gray-400 pb-3 border-b border-slate-700">
+                    <span>Car Image</span>
+                    <span>Owner Name</span>
+                    <span>Date</span>
+                    <span>Action</span>
+                  </div>
+                  {pendingVerifications.length > 0 ? (
+                    pendingVerifications.map((car) => (
+                      <div key={car._id} className="grid grid-cols-4 gap-4 items-center">
+                        <img
+                          src={car.images && car.images[0] ? `${baseURL}${car.images[0]}` : ""}
+                          alt={car.modelName}
+                          className="w-20 h-12 rounded-lg object-cover bg-slate-800"
+                        />
+                        <span className="text-gray-300 text-sm truncate">{car.userId?.name || 'Unknown'}</span>
+                        <span className="text-gray-400 text-sm">{new Date(car.createdAt).toLocaleDateString()}</span>
+                        <Link href={`/users/${car.userId?._id}`} className="text-green-400 hover:underline cursor-pointer text-sm font-medium hover:text-green-300">
+                          Review
+                        </Link>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-400 text-center py-4">No pending verifications</p>
+                  )}
                 </div>
-                {pendingVerifications.length > 0 ? (
-                  pendingVerifications.map((car) => (
-                    <div key={car._id} className="grid grid-cols-4 gap-4 items-center">
-                      <img
-                        src={car.images && car.images[0] ? `${baseURL}${car.images[0]}` : ""}
-                        alt={car.modelName}
-                        className="w-20 h-12 rounded-lg object-cover"
-                      />
-                      <span className="text-gray-300 text-sm">{car.userId?.name || 'Unknown'}</span>
-                      <span className="text-gray-400 text-sm">{new Date(car.createdAt).toLocaleDateString()}</span>
-                      <Link href={`/users/${car.userId?._id}`} className="text-green-400 hover:underline cursor-pointer text-sm font-medium hover:text-green-300">
-                        Review
-                      </Link>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-400 text-center py-4">No pending verifications</p>
-                )}
               </div>
             </CardContent>
           </Card>
@@ -342,35 +344,37 @@ export default function AnalyticsLayout() {
           <Card className="bg-[#1C2936] border-none">
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold text-white mb-6">Top Ranked Cars</h2>
-              <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-4 text-sm text-gray-400 pb-3 border-b border-slate-700">
-                  <span>Car Image</span>
-                  <span>Total Votes</span>
-                  <span>Action</span>
-                </div>
-                {topRankedCars.length > 0 ? (
-                  topRankedCars.map((car) => (
-                    <div key={car._id} className="grid grid-cols-3 gap-4 items-center">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={car.images && car.images[0] ? `${baseURL}${car.images[0]}` : ""}
-                          alt={car.modelName}
-                          className="w-20 h-12 rounded-lg object-cover"
-                        />
-                        <div>
-                          <p className="text-gray-300 text-sm font-medium">{car.manufacturer} {car.modelName}</p>
-                          <p className="text-gray-500 text-xs">Rank: {car.ranking}</p>
+              <div className="overflow-x-auto pb-2">
+                <div className="space-y-4 min-w-[500px]">
+                  <div className="grid grid-cols-3 gap-4 text-sm text-gray-400 pb-3 border-b border-slate-700">
+                    <span>Car Image</span>
+                    <span>Total Votes</span>
+                    <span>Action</span>
+                  </div>
+                  {topRankedCars.length > 0 ? (
+                    topRankedCars.map((car) => (
+                      <div key={car._id} className="grid grid-cols-3 gap-4 items-center">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={car.images && car.images[0] ? `${baseURL}${car.images[0]}` : ""}
+                            alt={car.modelName}
+                            className="w-20 h-12 rounded-lg object-cover bg-slate-800"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-gray-300 text-sm font-medium truncate">{car.manufacturer} {car.modelName}</p>
+                            <p className="text-gray-500 text-xs">Rank: {car.ranking}</p>
+                          </div>
                         </div>
+                        <span className="text-gray-300 text-sm">{car.votes || 0}</span>
+                        <button onClick={() => handleReset(car._id)} className="text-red-400 hover:underline cursor-pointer text-sm font-medium hover:text-red-300">
+                          Reset
+                        </button>
                       </div>
-                      <span className="text-gray-300 text-sm">{car.votes || 0}</span>
-                      <button onClick={() => handleReset(car._id)} className="text-red-400 hover:underline cursor-pointer text-sm font-medium hover:text-red-300">
-                        Reset
-                      </button>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-400 text-center py-4">No cars available</p>
-                )}
+                    ))
+                  ) : (
+                    <p className="text-gray-400 text-center py-4">No cars available</p>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

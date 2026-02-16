@@ -63,52 +63,60 @@ const CategoryTable = ({
   return (
     <div>
       {/* Header */}
-      <div className="bg-[#243b5e] rounded-t-xl px-6 py-4 grid grid-cols-4 gap-4 text-sm font-medium text-gray-300">
-        <div>Category Name</div>
-        <div>Total Cars</div>
-        <div>Voting Active</div>
-        <div>Action</div>
+      <div className="overflow-x-auto rounded-t-xl">
+        <div className="bg-[#243b5e] px-6 py-4 grid grid-cols-4 gap-4 text-sm font-medium text-gray-300 min-w-[700px]">
+          <div>Category Name</div>
+          <div>Total Cars</div>
+          <div>Voting Active</div>
+          <div className="flex justify-center">Action</div>
+        </div>
       </div>
 
       {/* Rows */}
-      {categories.length > 0 ? (
-        categories.map((category) => (
-          <div
-            key={category._id}
-            className="bg-[#1C2936] hover:bg-[#2a4470] border-b border-gray-700 px-6 py-4 grid grid-cols-4 gap-4 items-center transition-colors"
-          >
-            <div className="text-white text-sm font-medium">{category.name}</div>
-            <div className="text-gray-300 text-sm">{category.totalCar}</div>
-            <div>
-              <Switch
-                checked={category.voteStatus}
-                onCheckedChange={() => handleToggleVoting(category._id)}
-                className="data-[state=checked]:bg-blue-600 cursor-pointer"
-              />
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => onEdit(category)}
-                className="p-2 bg-green-600/20 hover:bg-green-600/30 rounded-lg transition-colors cursor-pointer"
-                title="Edit"
+      <div className="overflow-x-auto">
+        <div className="min-w-[700px]">
+          {categories.length > 0 ? (
+            categories.map((category) => (
+              <div
+                key={category._id}
+                className="bg-[#1C2936] hover:bg-[#2a4470] border-b border-gray-700 px-6 py-4 grid grid-cols-4 gap-4 items-center transition-colors"
               >
-                <Pencil size={18} className="text-green-400" />
-              </button>
-              <button
-                onClick={() => onDelete(category)}
-                className="p-2 bg-red-600/20 hover:bg-red-600/30 rounded-lg transition-colors cursor-pointer"
-                title="Delete"
-              >
-                <Trash2 size={18} className="text-red-400" />
-              </button>
+                <div className="text-white text-sm font-medium truncate" title={category.name}>
+                  {category.name}
+                </div>
+                <div className="text-gray-300 text-sm">{category.totalCar}</div>
+                <div>
+                  <Switch
+                    checked={category.voteStatus}
+                    onCheckedChange={() => handleToggleVoting(category._id)}
+                    className="data-[state=checked]:bg-blue-600 cursor-pointer"
+                  />
+                </div>
+                <div className="flex gap-2 justify-center">
+                  <button
+                    onClick={() => onEdit(category)}
+                    className="p-2 bg-green-600/20 hover:bg-green-600/30 rounded-lg transition-colors cursor-pointer"
+                    title="Edit"
+                  >
+                    <Pencil size={18} className="text-green-400" />
+                  </button>
+                  <button
+                    onClick={() => onDelete(category)}
+                    className="p-2 bg-red-600/20 hover:bg-red-600/30 rounded-lg transition-colors cursor-pointer"
+                    title="Delete"
+                  >
+                    <Trash2 size={18} className="text-red-400" />
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="bg-[#1C2936] px-6 py-12 text-center">
+              <p className="text-gray-400">No categories found</p>
             </div>
-          </div>
-        ))
-      ) : (
-        <div className="bg-[#1C2936] px-6 py-12 text-center">
-          <p className="text-gray-400">No categories found</p>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Pagination */}
       {filteredCategories.length > 0 && (

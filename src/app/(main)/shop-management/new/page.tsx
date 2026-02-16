@@ -205,16 +205,16 @@ export default function AddNewItemForm() {
   return (
     <div className="text-white">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold mb-2">Add New Item</h1>
-        <p className="text-gray-400 text-sm">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-xl md:text-2xl font-semibold mb-2">Add New Item</h1>
+        <p className="text-gray-400 text-xs md:text-sm">
           Configure a new digital asset or physical merchandise for the automotive community.
         </p>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-[#1a2332] rounded-lg p-6">
-        <h2 className="text-lg font-medium mb-6">General Information</h2>
+      <form onSubmit={handleSubmit} className="bg-[#1a2332] rounded-lg p-4 sm:p-6">
+        <h2 className="text-base md:text-lg font-medium mb-6">General Information</h2>
 
         {/* First Row - 3 columns */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -393,13 +393,13 @@ export default function AddNewItemForm() {
           ) : (
             <div
               onClick={() => !isCreatingShop && fileInputRef.current?.click()}
-              className={` border-2 border-dashed rounded-lg p-12 text-center hover:border-blue-500 transition-colors cursor-pointer ${errors.image ? 'border-red-500' : 'border-[#2a3744]'
+              className={` border-2 border-dashed rounded-lg p-8 md:p-12 text-center hover:border-blue-500 transition-colors cursor-pointer ${errors.image ? 'border-red-500' : 'border-[#2a3744]'
                 } ${isCreatingShop ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <div className="flex flex-col items-center justify-center">
-                <Upload className="w-12 h-12 text-blue-500 mb-4" />
-                <p className="text-white font-medium mb-1">Click to upload product image</p>
-                <p className="text-gray-400 text-sm">
+                <Upload className="w-10 h-10 md:w-12 md:h-12 text-blue-500 mb-4" />
+                <p className="text-white font-medium mb-1 text-sm md:text-base">Click to upload product image</p>
+                <p className="text-gray-400 text-xs md:text-sm max-w-xs mx-auto">
                   Drag and drop or click to browse. Support for PNG, JPG, or SVG (Max 5MB)
                 </p>
               </div>
@@ -416,20 +416,20 @@ export default function AddNewItemForm() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-4">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4">
           <Button
             type="button"
             onClick={handleCancel}
             disabled={isCreatingShop}
             variant="outline"
-            className="bg-[#FF48481F] border-[#2a3744] text-red-500 hover:bg-[#2a3744] hover:text-white px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto bg-[#FF48481F] border-[#2a3744] text-red-500 hover:bg-[#2a3744] hover:text-white px-6 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={isCreatingShop}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isCreatingShop ? (
               <>

@@ -197,9 +197,9 @@ export default function UserProfilePage() {
     <div className="">
       <div className="">
         {/* Profile Header Card */}
-        <div className="bg-[#1C2936] rounded-lg text-white shadow-sm p-8 mb-6">
-          <div className="flex items-start justify-between">
-            <div className="flex gap-6">
+        <div className="bg-[#1C2936] rounded-lg text-white shadow-sm p-4 sm:p-8 mb-6">
+          <div className="flex flex-col lg:flex-row items-center lg:items-start justify-between gap-6">
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-8 w-full">
               {/* Profile Image */}
               <div className="w-32 h-32 rounded-full overflow-hidden shrink-0 border-2 border-gray-200">
                 <Image
@@ -213,9 +213,9 @@ export default function UserProfilePage() {
               </div>
 
               {/* Profile Info Grid */}
-              <div className="grid grid-cols-3 gap-x-16 gap-y-6 flex-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 lg:gap-x-16 gap-y-6 flex-1 w-full text-center md:text-left">
                 <div>
-                  <div className="text-sm  text-white mb-1">Full Name</div>
+                  <div className="text-sm text-white mb-1">Full Name</div>
                   <div className="text-base font-medium text-gray-300">{profileData?.name || 'N/A'}</div>
                 </div>
                 <div>
@@ -224,7 +224,7 @@ export default function UserProfilePage() {
                 </div>
                 <div>
                   <div className="text-sm text-white mb-1">Email Address</div>
-                  <div className="text-base font-medium text-gray-300">{profileData?.email}</div>
+                  <div className="text-base font-medium text-gray-300 truncate">{profileData?.email}</div>
                 </div>
                 <div>
                   <div className="text-sm text-white mb-1">Phone Number</div>
@@ -240,7 +240,7 @@ export default function UserProfilePage() {
             {/* Edit Button */}
             <Button
               onClick={() => setIsEditDialogOpen(true)}
-              className="text-white px-6"
+              className="text-white px-6 w-full lg:w-auto"
             >
               Edit Profile
             </Button>
@@ -322,7 +322,7 @@ export default function UserProfilePage() {
           </div>
           <div className="flex justify-end mt-8">
             <Button
-              className="text-white px-6 bg-cyan-600 hover:bg-cyan-700 transition-colors"
+              className="text-white px-6 w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 transition-colors"
               onClick={handlePasswordChange}
               disabled={isUpdatingPassword}
             >
@@ -391,7 +391,7 @@ export default function UserProfilePage() {
             </div>
 
             {/* Location and Phone Row */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="location" className="text-sm font-medium mb-2 block text-white">
                   Location (Address)

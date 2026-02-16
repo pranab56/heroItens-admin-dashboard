@@ -3,12 +3,14 @@
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
+  SidebarFooter,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar
 } from "@/components/ui/sidebar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { logout } from "@/features/auth/authSlice";
 import {
   Car,
@@ -24,7 +26,6 @@ import {
   Users,
   Zap
 } from "lucide-react";
-import Image from 'next/image';
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -50,6 +51,7 @@ const sidebars: SidebarItem[] = [
       { name: "All Cars", path: "/car-management/all-cars", icon: Car },
       { name: "Cars Verification", path: "/car-management/verification", icon: ShieldIcon },
       { name: "All Categoric", path: "/car-management/categoric", icon: LayoutDashboard },
+      { name: "Add Category & Model", path: "/car-management/add-category-model", icon: LayoutDashboard },
     ]
   },
   {
@@ -71,6 +73,15 @@ const sidebars: SidebarItem[] = [
     ]
   },
   {
+    name: "Payment Management",
+    path: "/payment-management",
+    icon: ShoppingCart,
+    subItems: [
+      { name: "Tire Management", path: "/payment-management/tire-management", icon: ShoppingBag },
+      { name: "Payment History", path: "/payment-management/payment-history", icon: ClipboardList },
+    ]
+  },
+  {
     name: "System Settings", path: "/settings/general", icon: Settings,
     subItems: [
       { name: "General Settings", path: "/settings/general", icon: ClipboardList },
@@ -86,11 +97,19 @@ export default function OptimusSidebar() {
   const dispatch = useDispatch();
   const router = useRouter();
 
+  const { setOpenMobile, isMobile: sidebarIsMobile } = useSidebar();
+
   const isActive = (path: string) => {
     if (path === "/") {
       return pathname === "/";
     }
     return pathname.startsWith(path);
+  };
+
+  const handleLinkClick = () => {
+    if (sidebarIsMobile) {
+      setOpenMobile(false);
+    }
   };
 
   const toggleDropdown = (name: string) => {
@@ -103,31 +122,37 @@ export default function OptimusSidebar() {
     router.replace("/auth/login");
   };
 
+  const truncate = (text: string) => {
+    return text.length > 12 ? text.substring(0, 12) + "..." : text;
+  };
+
 
   return (
     <Sidebar className="border-none">
-      <SidebarContent className="bg-[#1C2936] text-white relative flex flex-col h-full">
-        {/* Custom scrollbar container */}
-        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 scrollbar-thumb-rounded-full hover:scrollbar-thumb-white/20">
-          <SidebarGroup>
-            {/* Logo Section */}
-            <div className="flex flex-col items-center justify-center px-6 pt-6 pb-6 sticky top-0 bg-[#1C2936] z-10">
-              <div className="relative w-24 h-24 mb-2">
-                <div className="w-full h-full  flex items-center justify-center overflow-hidden">
-                  <Image
+      <TooltipProvider delayDuration={200}>
+        <div className="bg-[#1C2936] text-white flex flex-col h-full overflow-hidden">
+          {/* Logo Section - Header */}
+          <SidebarHeader className="p-0 border-none">
+            <div className="flex flex-col items-center justify-center px-6 pt-8 pb-6 bg-[#1C2936]">
+              <div className="relative w-20 h-20 md:w-24 md:h-24 mb-2">
+                <div className="w-full h-full flex items-center justify-center overflow-hidden">
+                  <img
                     src="/Logo.png"
                     alt="MyGarage Logo"
-                    width={80}
-                    height={80}
+                    width={1000}
+                    height={1000}
                     className="object-contain"
-                    priority
+                  // priority
                   />
                 </div>
               </div>
             </div>
+          </SidebarHeader>
 
-            {/* Navigation Menu */}
-            <SidebarGroupContent className="px-4  pb-2">
+          {/* Navigation Menu - Content */}
+          <SidebarContent className="bg-[#1C2936] flex-1 overflow-hidden p-0">
+            {/* Custom scrollbar container */}
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 scrollbar-thumb-rounded-full hover:scrollbar-thumb-white/20 px-4 pb-2">
               <SidebarMenu className="space-y-1">
                 {sidebars.map((item) => {
                   const hasSubItems = item.subItems && item.subItems.length > 0;
@@ -149,7 +174,18 @@ export default function OptimusSidebar() {
                           >
                             <div className="flex items-center gap-3">
                               <item.icon className="h-5 w-5 shrink-0" />
-                              <span className="text-[15px] font-normal">{item.name}</span>
+                              {item.name.length > 12 ? (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="text-[15px] font-normal">{truncate(item.name)}</span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right">
+                                    <p>{item.name}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              ) : (
+                                <span className="text-[15px] font-normal">{item.name}</span>
+                              )}
                             </div>
                             {isDropdownOpen ? (
                               <ChevronDown className="h-4 w-4 transition-transform duration-200" />
@@ -168,11 +204,23 @@ export default function OptimusSidebar() {
                           >
                             <Link
                               href={item.path}
+                              onClick={handleLinkClick}
                               className="flex items-center gap-3 w-full"
                               aria-current={isItemActive ? "page" : undefined}
                             >
                               <item.icon className="h-5 w-5 shrink-0" />
-                              <span className="text-[15px] font-normal">{item.name}</span>
+                              {item.name.length > 12 ? (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="text-[15px] font-normal">{truncate(item.name)}</span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right">
+                                    <p>{item.name}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              ) : (
+                                <span className="text-[15px] font-normal">{item.name}</span>
+                              )}
                             </Link>
                           </SidebarMenuButton>
                         )}
@@ -195,11 +243,23 @@ export default function OptimusSidebar() {
                                 >
                                   <Link
                                     href={subItem.path}
+                                    onClick={handleLinkClick}
                                     className="flex items-center gap-3 w-full"
                                     aria-current={isSubItemActive ? "page" : undefined}
                                   >
-                                    <div className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
-                                    <span className="text-[14px] font-normal">{subItem.name}</span>
+                                    <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSubItemActive ? 'bg-white' : 'bg-gray-400'}`} />
+                                    {subItem.name.length > 12 ? (
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <span className="text-[14px] font-normal">{truncate(subItem.name)}</span>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right">
+                                          <p>{subItem.name}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    ) : (
+                                      <span className="text-[14px] font-normal">{subItem.name}</span>
+                                    )}
                                   </Link>
                                 </SidebarMenuButton>
                               </SidebarMenuItem>
@@ -211,21 +271,26 @@ export default function OptimusSidebar() {
                   );
                 })}
               </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </div>
+            </div>
+          </SidebarContent>
 
-        {/* Logout Button - Fixed at bottom */}
-        <div className="px-4 pb-6 pt-4 bg-[#1a2942] border-t border-white/10">
-          <button
-            onClick={handleLogout}
-            className="w-full h-11 cursor-pointer px-4 rounded-lg border-2 border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500 transition-all duration-200 flex items-center justify-center gap-3"
-          >
-            <LogOut className="h-5 w-5 shrink-0" />
-            <span className="text-[15px] font-medium">Logout</span>
-          </button>
+          {/* Logout Section - Footer */}
+          <SidebarFooter className="p-0 border-none">
+            <div className="px-4 pb-8 md:pb-6 pt-4 bg-[#1a2942] border-t border-white/10">
+              <button
+                onClick={() => {
+                  handleLogout();
+                  handleLinkClick();
+                }}
+                className="w-full h-11 cursor-pointer px-4 rounded-lg border-2 border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500 transition-all duration-200 flex items-center justify-center gap-3"
+              >
+                <LogOut className="h-5 w-5 shrink-0" />
+                <span className="text-[15px] font-medium">Logout</span>
+              </button>
+            </div>
+          </SidebarFooter>
         </div>
-      </SidebarContent>
+      </TooltipProvider>
 
       {/* Add custom scrollbar styles to global styles */}
       <style jsx global>{`

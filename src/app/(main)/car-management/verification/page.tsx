@@ -297,169 +297,168 @@ export default function CarManagement() {
   return (
     <div className="">
       {/* Search and Filter */}
-      <div className="flex flex-col bg-[#1C2936] p-4 rounded-lg md:flex-row gap-4 mb-6">
+      <div className="flex flex-col bg-[#1C2936] p-4 rounded-lg md:flex-row items-center gap-4 mb-6">
         <div className="flex w-full md:w-5/12 relative">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
           <Input
-            placeholder="Search by owner, manufacturer, model, or year"
+            placeholder="Search here..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="pl-12 h-12 bg-[#0d1829] border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
+            className="pl-12 h-12 bg-[#0d1829] border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg w-full"
           />
         </div>
-
-        {/* <div className="w-full md:w-auto relative h-full">
-          <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 z-10" size={20} />
-          <Select onValueChange={() => { }}>
-            <SelectTrigger className="w-full md:w-[200px] h-20 py-[23px] bg-[#0d1829] border-gray-700 text-white pl-12 rounded-lg cursor-pointer">
-              <SelectValue placeholder="Filter: All Status" />
-            </SelectTrigger>
-            <SelectContent className='bg-[#1a2942] border-gray-700 text-white cursor-pointer'>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="PENDING">Pending</SelectItem>
-              <SelectItem value="APPROVED">Approved</SelectItem>
-              <SelectItem value="REJECTED">Rejected</SelectItem>
-            </SelectContent>
-          </Select>
-        </div> */}
       </div>
 
       {/* Cars Table */}
-      <div>
-        {/* Header */}
-        <div className="bg-[#243b5e] rounded-t-xl px-6 py-4 grid grid-cols-6 gap-4 text-sm font-medium text-gray-300">
-          <div>Car Image</div>
-          <div>Owner Name</div>
-          <div>Date</div>
-          <div>Manufacturer</div>
-          <div>Model</div>
-          <div>Action</div>
+      <div className="overflow-x-auto rounded-t-xl">
+        <div className="min-w-[1000px]">
+          {/* Header */}
+          <div className="bg-[#243b5e] px-6 py-4 grid grid-cols-6 gap-4 text-sm font-medium text-gray-300">
+            <div>Car Image</div>
+            <div>Owner Name</div>
+            <div>Date</div>
+            <div>Manufacturer</div>
+            <div>Model</div>
+            <div className="flex justify-center">Action</div>
+          </div>
         </div>
+      </div>
 
-        {/* Rows */}
-        {currentCars.length === 0 ? (
-          <div className="bg-[#1C2936] py-12 text-center text-gray-500">
-            {cars.length === 0 ? 'No cars found' : 'No records found matching your criteria'}
-          </div>
-        ) : (
-          currentCars.map((car) => (
-            <div
-              key={car._id}
-              className="bg-[#1C2936] hover:bg-[#2a4470] border-b border-gray-700 px-6 py-2 grid grid-cols-6 gap-4 items-center transition-colors"
-            >
-              <div>
-                <Avatar className="h-16 w-20 rounded-lg">
-                  {car.images && car.images.length > 0 ? (
-                    <AvatarImage
-                      src={baseURL + car.images[0]}
-                      alt={`${car.manufacturer} ${car.modelName}`}
-                      className="rounded-lg object-cover"
+      <div className="overflow-x-auto">
+        <div className="min-w-[1000px]">
+
+          {/* Rows */}
+          {currentCars.length === 0 ? (
+            <div className="bg-[#1C2936] py-12 text-center text-gray-500">
+              {cars.length === 0 ? 'No cars found' : 'No records found matching your criteria'}
+            </div>
+          ) : (
+            currentCars.map((car) => (
+              <div
+                key={car._id}
+                className="bg-[#1C2936] hover:bg-[#2a4470] border-b border-gray-700 px-6 py-2 grid grid-cols-6 gap-4 items-center transition-colors"
+              >
+                <div>
+                  <Avatar className="h-16 w-20 rounded-lg">
+                    {car.images && car.images.length > 0 ? (
+                      <AvatarImage
+                        src={baseURL + car.images[0]}
+                        alt={`${car.manufacturer} ${car.modelName}`}
+                        className="rounded-lg object-cover"
+                      />
+                    ) : (
+                      <AvatarFallback className="rounded-lg bg-gray-700 text-white">
+                        {car.manufacturer[0]}{car.modelName[0]}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                </div>
+
+                <div className="text-white text-sm font-medium">{car.userId.name}</div>
+                <div className="text-gray-300 text-sm">{formatDate(car.createdAt)}</div>
+                <div className="text-gray-300 text-sm">{car.manufacturer}</div>
+                <div className="text-gray-300 text-sm">{car.modelName}</div>
+
+                <div className="flex gap-2 justify-center">
+                  <button
+                    onClick={() => handleViewDetails(car)}
+                    className="p-2 cursor-pointer bg-blue-600/20 hover:bg-blue-600/30 rounded-lg transition-colors"
+                    title="View Details"
+                  >
+                    <Eye size={18} className="text-blue-400" />
+                  </button>
+                  <button
+                    onClick={() => handleApproveClick(car)}
+                    disabled={isApproveDisabled(car)}
+                    className={`p-2 cursor-pointer rounded-lg transition-colors ${isApproveDisabled(car)
+                      ? 'bg-gray-600/20 cursor-not-allowed opacity-50'
+                      : 'bg-green-600/20 hover:bg-green-600/30'
+                      }`}
+                    title={isApproveDisabled(car) ? "Already Approved" : "Approve"}
+                  >
+                    <Check
+                      size={18}
+                      className={isApproveDisabled(car) ? "text-gray-400" : "text-green-400"}
                     />
-                  ) : (
-                    <AvatarFallback className="rounded-lg bg-gray-700 text-white">
-                      {car.manufacturer[0]}{car.modelName[0]}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
+                  </button>
+                  <button
+                    onClick={() => handleRejectClick(car)}
+                    disabled={isRejectDisabled(car)}
+                    className={`p-2 cursor-pointer rounded-lg transition-colors ${isRejectDisabled(car)
+                      ? 'bg-gray-600/20 cursor-not-allowed opacity-50'
+                      : 'bg-red-600/20 hover:bg-red-600/30'
+                      }`}
+                    title={isRejectDisabled(car) ? "Already Rejected" : "Reject"}
+                  >
+                    <X
+                      size={18}
+                      className={isRejectDisabled(car) ? "text-gray-400" : "text-red-400"}
+                    />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+
+          {/* Pagination */}
+          {filteredCars.length > 0 && (
+            <div className="flex flex-col bg-[#1C2936] rounded-b-xl p-5 sm:flex-row items-center justify-between gap-4 border-t border-gray-700">
+              <div className="text-sm text-gray-400">
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredCars.length)} of {filteredCars.length} Cars
               </div>
 
-              <div className="text-white text-sm font-medium">{car.userId.name}</div>
-              <div className="text-gray-300 text-sm">{formatDate(car.createdAt)}</div>
-              <div className="text-gray-300 text-sm">{car.manufacturer}</div>
-              <div className="text-gray-300 text-sm">{car.modelName}</div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleViewDetails(car)}
-                  className="p-2 cursor-pointer bg-blue-600/20 hover:bg-blue-600/30 rounded-lg transition-colors"
-                  title="View Details"
-                >
-                  <Eye size={18} className="text-blue-400" />
-                </button>
-                <button
-                  onClick={() => handleApproveClick(car)}
-                  disabled={isApproveDisabled(car)}
-                  className={`p-2 cursor-pointer rounded-lg transition-colors ${isApproveDisabled(car)
-                    ? 'bg-gray-600/20 cursor-not-allowed opacity-50'
-                    : 'bg-green-600/20 hover:bg-green-600/30'
-                    }`}
-                  title={isApproveDisabled(car) ? "Already Approved" : "Approve"}
-                >
-                  <Check
-                    size={18}
-                    className={isApproveDisabled(car) ? "text-gray-400" : "text-green-400"}
-                  />
-                </button>
-                <button
-                  onClick={() => handleRejectClick(car)}
-                  disabled={isRejectDisabled(car)}
-                  className={`p-2 cursor-pointer rounded-lg transition-colors ${isRejectDisabled(car)
-                    ? 'bg-gray-600/20 cursor-not-allowed opacity-50'
-                    : 'bg-red-600/20 hover:bg-red-600/30'
-                    }`}
-                  title={isRejectDisabled(car) ? "Already Rejected" : "Reject"}
-                >
-                  <X
-                    size={18}
-                    className={isRejectDisabled(car) ? "text-gray-400" : "text-red-400"}
-                  />
-                </button>
-              </div>
-            </div>
-          ))
-        )}
-
-        {/* Pagination */}
-        {filteredCars.length > 0 && (
-          <div className="flex flex-col bg-[#1C2936] rounded-b-xl p-5 sm:flex-row items-center justify-between gap-4 border-t border-gray-700">
-            <div className="text-sm text-gray-400">
-              Showing {startIndex + 1}-{Math.min(endIndex, filteredCars.length)} of {filteredCars.length} Cars
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                className="text-gray-300 hover:text-white hover:bg-[#243b5e] h-10 px-4"
-                onClick={handlePrevPage}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-
-              {getPageNumbers().map((page, index) => (
+              <div className="flex items-center gap-2">
                 <Button
-                  key={index}
-                  variant={page === currentPage ? 'default' : 'ghost'}
-                  className={`h-10 min-w-10 ${page === currentPage
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'text-gray-300 hover:text-white hover:bg-[#243b5e]'
-                    }`}
-                  onClick={() => typeof page === 'number' && handlePageClick(page)}
-                  disabled={typeof page !== 'number'}
+                  variant="ghost"
+                  className="text-gray-300 hover:text-white hover:bg-[#243b5e] h-10 px-4"
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
                 >
-                  {page}
+                  Previous
                 </Button>
-              ))}
 
-              <Button
-                variant="ghost"
-                className="text-gray-300 hover:text-white hover:bg-[#243b5e] h-10 px-4"
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
+                {getPageNumbers().map((page, index) => (
+                  <Button
+                    key={index}
+                    variant={page === currentPage ? 'default' : 'ghost'}
+                    className={`h-10 min-w-10 ${page === currentPage
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'text-gray-300 hover:text-white hover:bg-[#243b5e]'
+                      }`}
+                    onClick={() => typeof page === 'number' && handlePageClick(page)}
+                    disabled={typeof page !== 'number'}
+                  >
+                    {page}
+                  </Button>
+                ))}
+
+                <Button
+                  variant="ghost"
+                  className="text-gray-300 hover:text-white hover:bg-[#243b5e] h-10 px-4"
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Car Details Modal */}
       <Modal open={showDetailsModal} onOpenChange={setShowDetailsModal}>
         {selectedCar && (
-          <div className="bg-[#0f1c2e] rounded-xl w-[90vw] max-w-4xl max-h-[90vh] overflow-hidden flex">
+          <div className="bg-[#0f1c2e] rounded-xl w-[95vw] max-w-4xl max-h-[90vh] overflow-hidden flex flex-col lg:flex-row relative">
+            <button
+              onClick={() => setShowDetailsModal(false)}
+              className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white lg:hidden"
+            >
+              <X size={20} />
+            </button>
+
             {/* Left Side - Car Image */}
-            <div className="w-1/2 bg-[#1a2942] p-6 flex flex-col">
+            <div className="w-full lg:w-1/2 bg-[#1a2942] p-4 sm:p-6 flex flex-col overflow-y-auto lg:overflow-visible">
               {/* Main Image */}
               {selectedCar.images && selectedCar.images.length > 0 ? (
                 <>
@@ -540,7 +539,7 @@ export default function CarManagement() {
             </div>
 
             {/* Right Side - Details */}
-            <div className="w-1/2 bg-[#0f1c2e] p-6 overflow-y-auto">
+            <div className="w-full lg:w-1/2 bg-[#0f1c2e] p-4 sm:p-6 overflow-y-auto">
               <div className="mb-6">
                 <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${selectedCar.status === 'APPROVED' ? 'bg-green-500/20 text-green-400' :
                   selectedCar.status === 'REJECTED' ? 'bg-red-500/20 text-red-400' :

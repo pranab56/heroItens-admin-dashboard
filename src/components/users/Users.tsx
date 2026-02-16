@@ -124,22 +124,22 @@ export default function UserManagement() {
 
   return (
     <div className="">
-      <div className="flex flex-col bg-[#1C2936] p-4 rounded-lg md:flex-row gap-4 mb-6">
-        <div className="flex w-5/12 relative">
+      <div className="flex flex-col bg-[#1C2936] p-4 rounded-lg md:flex-row items-center gap-4 mb-6">
+        <div className="flex w-full md:w-5/12 relative">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
           <Input
-            placeholder="Screen here"
+            placeholder="Search here"
             value={searchQuery}
             onChange={handleSearchChange}
-            className="pl-12 h-12 bg-[#0d1829] border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
+            className="pl-12 h-12 bg-[#0d1829] border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg w-full"
           />
         </div>
 
-        <div className="w-full md:w-auto relative h-full">
+        <div className="w-full md:w-auto relative flex-1 md:flex-none">
           <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 z-10" size={20} />
           <Select value={statusFilter} onValueChange={handleStatusChange} >
-            <SelectTrigger className="w-full md:w-[200px] h-20 py-[23px] bg-[#0d1829] border-gray-700 text-white pl-12 rounded-lg cursor-pointer">
-              <SelectValue placeholder="Filter: 2025" />
+            <SelectTrigger className="w-full md:w-[200px] h-12 bg-[#0d1829] py-[23px] border-gray-700 text-white pl-12 rounded-lg cursor-pointer">
+              <SelectValue placeholder="Year" />
             </SelectTrigger>
             <SelectContent className='bg-[#1a2942]  border-gray-700 text-white cursor-pointer'>
               <SelectItem value="All">Year</SelectItem>
@@ -159,46 +159,48 @@ export default function UserManagement() {
         ) : (
           <>
             {/* Users List */}
-            <div className="">
-              {/* Header Row */}
-              <div className="bg-[#243b5e] rounded-t-xl  px-6 py-4 grid grid-cols-3 gap-4 text-sm font-medium text-gray-300">
-                <div>Name</div>
-                <div>Email</div>
-                <div>Action</div>
-              </div>
-
-              {/* User Rows */}
-              {currentUsers.length === 0 ? (
-                <div className="py-8 text-center text-gray-500">
-                  No users found matching your criteria
+            <div className="overflow-x-auto rounded-t-xl">
+              <div className="min-w-[700px]">
+                {/* Header Row */}
+                <div className="bg-[#243b5e] px-6 py-4 grid grid-cols-3 gap-4 text-sm font-medium text-gray-300">
+                  <div>Name</div>
+                  <div>Email</div>
+                  <div>Action</div>
                 </div>
-              ) : (
-                currentUsers.map((user) => (
-                  <div
-                    key={user._id}
-                    className="bg-[#1C2936] hover:bg-[#2a4470] border-b border-gray-700  px-6 py-4 grid grid-cols-3 gap-4 items-center transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-12 w-12 rounded-lg">
-                        <AvatarImage src={user.profile} alt={getUserFullName(user)} className="rounded-lg" />
-                        <AvatarFallback className="rounded-lg bg-gray-700 text-white">
-                          {user.name?.[0]?.toUpperCase() || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-white text-sm font-medium">{getUserFullName(user)}</span>
-                    </div>
-                    <div className="text-gray-300 text-sm">{user.email}</div>
-                    <div>
-                      <Link
-                        href={`/users/${user._id}`}
-                        className="text-emerald-400 hover:text-emerald-300 text-sm font-medium underline transition-colors"
-                      >
-                        View Details
-                      </Link>
-                    </div>
+
+                {/* User Rows */}
+                {currentUsers.length === 0 ? (
+                  <div className="py-8 text-center text-gray-500 bg-[#1C2936]">
+                    No users found matching your criteria
                   </div>
-                ))
-              )}
+                ) : (
+                  currentUsers.map((user) => (
+                    <div
+                      key={user._id}
+                      className="bg-[#1C2936] hover:bg-[#2a4470] border-b border-gray-700 px-6 py-4 grid grid-cols-3 gap-4 items-center transition-colors"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Avatar className="h-10 w-10 md:h-12 md:w-12 rounded-lg shrink-0">
+                          <AvatarImage src={user.profile} alt={getUserFullName(user)} className="rounded-lg object-cover" />
+                          <AvatarFallback className="rounded-lg bg-gray-700 text-white">
+                            {user.name?.[0]?.toUpperCase() || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-white text-sm font-medium truncate">{getUserFullName(user)}</span>
+                      </div>
+                      <div className="text-gray-300 text-sm truncate">{user.email}</div>
+                      <div>
+                        <Link
+                          href={`/users/${user._id}`}
+                          className="text-emerald-400 hover:text-emerald-300 text-sm font-medium underline transition-colors"
+                        >
+                          View Details
+                        </Link>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
 
             {/* Pagination */}
