@@ -73,15 +73,16 @@ export default function CategoryManagement() {
   const router = useRouter();
 
   const { data: shopData, isLoading: isShopLoading, refetch } = useAllShopQuery({});
+  console.log("shopData", shopData);
   const [updateStatus] = useUpdateStatusMutation();
 
   const itemsPerPage = 7;
 
   // Sync data from API
   useEffect(() => {
-    if (shopData?.data?.data) {
-      setProducts(shopData.data.data);
-      setFilteredProducts(shopData.data.data);
+    if (shopData?.data) {
+      setProducts(shopData.data);
+      setFilteredProducts(shopData.data);
     }
   }, [shopData]);
 
@@ -106,7 +107,7 @@ export default function CategoryManagement() {
       id: 1,
       icon: Package,
       title: "Total Items",
-      value: shopData?.data?.AllItemsLength?.toString() || "0",
+      value: shopData?.meta?.AllItemsLength?.toString() || "0",
       valueColor: "text-blue-400",
       bgColor: "bg-[#1C2936]"
     },
@@ -114,7 +115,7 @@ export default function CategoryManagement() {
       id: 2,
       icon: Trophy,
       title: "Active Rewards",
-      value: shopData?.data?.avtiveItemsLength?.toString() || "0",
+      value: shopData?.meta?.avtiveItemsLength?.toString() || "0",
       valueColor: "text-blue-400",
       bgColor: "bg-[#1C2936]"
     },
@@ -122,7 +123,7 @@ export default function CategoryManagement() {
       id: 3,
       icon: AlertCircle,
       title: "Inactive Items",
-      value: shopData?.data?.inactiveItemsLength?.toString() || "0",
+      value: shopData?.meta?.inactiveItemsLength?.toString() || "0",
       valueColor: "text-red-400",
       bgColor: "bg-[#1C2936]"
     }

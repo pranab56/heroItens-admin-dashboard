@@ -174,7 +174,7 @@ export default function AddNewItemForm() {
       handleRemoveImage();
 
       // Navigate to products page
-      router.push("/shop-management/products");
+      // router.push("/shop-management/products");
 
     } catch (error: any) {
       // Error handling
