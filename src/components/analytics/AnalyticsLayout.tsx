@@ -309,9 +309,9 @@ export default function AnalyticsLayout() {
           <Card className="bg-[#1C2936] border-none">
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold text-white mb-6">Pending Verifications</h2>
-              <div className="overflow-x-auto pb-2">
+              <div className="overflow-y-auto overflow-x-auto max-h-[360px] scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent pr-2 pb-2">
                 <div className="space-y-4 min-w-[500px]">
-                  <div className="grid grid-cols-4 gap-4 text-sm text-gray-400 pb-3 border-b border-slate-700">
+                  <div className="grid grid-cols-4 gap-4 text-sm text-gray-400 pb-3 border-b border-slate-700 sticky top-0 bg-[#1C2936] z-10">
                     <span>Car Image</span>
                     <span>Owner Name</span>
                     <span>Date</span>
@@ -344,9 +344,9 @@ export default function AnalyticsLayout() {
           <Card className="bg-[#1C2936] border-none">
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold text-white mb-6">Top Ranked Cars</h2>
-              <div className="overflow-x-auto pb-2">
+              <div className="overflow-y-auto overflow-x-auto max-h-[360px] scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent pr-2 pb-2">
                 <div className="space-y-4 min-w-[500px]">
-                  <div className="grid grid-cols-3 gap-4 text-sm text-gray-400 pb-3 border-b border-slate-700">
+                  <div className="grid grid-cols-3 gap-4 text-sm text-gray-400 pb-3 border-b border-slate-700 sticky top-0 bg-[#1C2936] z-10">
                     <span>Car Image</span>
                     <span>Total Votes</span>
                     <span>Action</span>
