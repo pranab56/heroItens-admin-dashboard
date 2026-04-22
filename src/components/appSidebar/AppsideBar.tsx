@@ -171,11 +171,15 @@ export default function OptimusSidebar() {
                             <SidebarMenuItem key={sub.path}>
                               <SidebarMenuButton
                                 asChild
-                                className={`h-10 px-4 ${isSubActive ? "bg-blue-600/30 text-blue-300 border border-blue-500/20" : "text-gray-400 hover:bg-white/5"}`}
+                                className={`h-10 px-4 transition-all duration-200 ${
+                                  isSubActive 
+                                    ? "bg-blue-600 text-white font-medium hover:bg-blue-600 hover:text-white" 
+                                    : "text-gray-400 hover:bg-white/10 hover:text-white"
+                                }`}
                               >
                                 <Link href={sub.path} className="flex items-center gap-3 w-full">
-                                  <div className={`w-1 h-1 rounded-full ${isSubActive ? "bg-blue-400" : "bg-gray-500"}`} />
-                                  <span>{truncate(sub.name)}</span>
+                                  <div className={`w-1.5 h-1.5 rounded-full ${isSubActive ? "bg-white" : "bg-gray-500"}`} />
+                                  <span className="text-[14px]">{truncate(sub.name)}</span>
                                 </Link>
                               </SidebarMenuButton>
                             </SidebarMenuItem>
