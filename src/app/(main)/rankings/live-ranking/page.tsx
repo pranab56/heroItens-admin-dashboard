@@ -11,8 +11,8 @@ import { useGetAllCarQuery, useResetCarMutation } from '@/features/car/carApi';
 import { AlertTriangle, RotateCw, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { CustomLoading } from '../../../../hooks/CustomLoading';
-import { baseURL } from '../../../../utils/BaseURL';
+import { CustomLoading } from '@/hooks/CustomLoading';
+import { baseURL } from '@/utils/BaseURL';
 
 // Car Interface based on API response
 interface Car {
@@ -74,8 +74,8 @@ const Modal = ({ open, onOpenChange, children }: ModalProps) => {
 };
 
 // Main Component
-export default function CarManagement() {
-  const { data: apiResponse, isLoading } = useGetAllCarQuery({});
+export default function LiveRankingPage() {
+  const { data: apiResponse, isLoading } = useGetAllCarQuery(undefined);
   const [cars, setCars] = useState<Car[]>([]);
   const [filteredCars, setFilteredCars] = useState<Car[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');

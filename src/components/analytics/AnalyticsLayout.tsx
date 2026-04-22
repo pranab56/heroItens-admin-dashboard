@@ -54,8 +54,8 @@ interface FilterOption {
 }
 
 export default function AnalyticsLayout() {
-  const { data, isLoading } = useOverviewQuery({});
-  const { data: carData, isLoading: carLoading } = useGetAllCarQuery({});
+  const { data, isLoading } = useOverviewQuery(undefined);
+  const { data: carData, isLoading: carLoading } = useGetAllCarQuery(undefined);
   const [resetCar] = useResetCarMutation();
 
   // Transform API data for BarChart

@@ -10,9 +10,9 @@ import { Input } from '@/components/ui/input';
 import { AlertTriangle, Check, Eye, Search, X } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { useApproveCarMutation, useGetAllCarQuery } from '../../../../features/car/carApi';
-import { CustomLoading } from '../../../../hooks/CustomLoading';
-import { baseURL } from '../../../../utils/BaseURL';
+import { useApproveCarMutation, useGetAllCarQuery } from '@/features/car/carApi';
+import { CustomLoading } from '@/hooks/CustomLoading';
+import { baseURL } from '@/utils/BaseURL';
 
 // Car Interface based on API response
 interface Car {
@@ -67,7 +67,7 @@ const Modal = ({ open, onOpenChange, children }: ModalProps) => {
 };
 
 // Main Component
-export default function CarManagement() {
+export default function CarVerificationPage() {
   const [cars, setCars] = useState<Car[]>([]);
   const [filteredCars, setFilteredCars] = useState<Car[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -81,19 +81,22 @@ export default function CarManagement() {
   const [loading, setLoading] = useState(true);
 
   // API hooks
-  const { data: apiData, isLoading: carsLoading, refetch } = useGetAllCarQuery({});
+  const { data: apiData, isLoading: carsLoading, refetch } = useGetAllCarQuery(undefined);
   const [approveCar, { isLoading: approveLoading }] = useApproveCarMutation();
 
   const itemsPerPage = 7;
 
-  // Fetch cars from API
+  // Fetch cars from API - Stabilized
   useEffect(() => {
-    if (apiData?.success && apiData.data) {
-      setCars(apiData.data);
-      setFilteredCars(apiData.data);
+    if (apiData) {
+      const carData = apiData.data || [];
+      setCars(carData);
+      setFilteredCars(carData);
+      setLoading(false);
+    } else if (!carsLoading) {
       setLoading(false);
     }
-  }, [apiData]);
+  }, [apiData, carsLoading]);
 
   // Filter cars based on search
   useEffect(() => {
