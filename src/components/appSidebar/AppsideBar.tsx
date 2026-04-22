@@ -137,7 +137,7 @@ export default function OptimusSidebar() {
                           onClick={() => setOpenDropdown(isDropdownOpen ? null : item.name)}
                           className={`h-11 px-4 justify-between transition-all duration-200 ${
                             isDropdownOpen 
-                              ? "bg-white/10 text-white" 
+                              ? "bg-white/10 text-white hover:bg-white/10" 
                               : isItemActive 
                                 ? "bg-blue-600 text-white hover:bg-blue-600 hover:text-white" 
                                 : "text-gray-300 hover:bg-white/5 hover:text-white"
