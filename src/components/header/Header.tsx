@@ -15,7 +15,7 @@ import { SidebarTrigger } from '../ui/sidebar';
 
 export default function Header() {
   const router = useRouter();
-  const { data: apiResponse, isLoading } = useGetAllNotificationQuery({});
+  const { data: apiResponse, isLoading } = useGetAllNotificationQuery(undefined);
   const { data: profileDataResponse, isLoading: profileDataLoading, refetch } = useGetMyProfileQuery(
     typeof window !== 'undefined' ? localStorage.getItem("HeroItemsAdminId") : null,
     { skip: typeof window === 'undefined' || !localStorage.getItem("HeroItemsAdminId") }

@@ -8,10 +8,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Input } from '../../../../components/ui/input';
-import { useGetAllCarQuery } from '../../../../features/car/carApi';
-import { CustomLoading } from '../../../../hooks/CustomLoading';
-import { baseURL } from '../../../../utils/BaseURL';
+import { Input } from '@/components/ui/input';
+import { useGetAllCarQuery } from '@/features/car/carApi';
+import { CustomLoading } from '@/hooks/CustomLoading';
+import { baseURL } from '@/utils/BaseURL';
 
 // Car Interface based on API response
 interface Car {
@@ -38,11 +38,12 @@ interface Car {
 
 
 // Main Component
-export default function UserManagement() {
+// Main Component
+export default function AllCarsPage() {
   const [filteredCars, setFilteredCars] = useState<Car[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const { data: apiResponse, isLoading } = useGetAllCarQuery({});
+  const { data: apiResponse, isLoading } = useGetAllCarQuery(undefined);
   const itemsPerPage = 9;
 
   // Extract cars from API response
@@ -64,31 +65,30 @@ export default function UserManagement() {
   };
 
   // Filter cars
+  // Filter cars logic - using a stable effect
   useEffect(() => {
-    if (!cars.length) {
+    if (!cars || cars.length === 0) {
       setFilteredCars([]);
       return;
     }
 
     const filtered = cars.filter(car => {
-      const ownerName = getOwnerName(car).toLowerCase();
-      const manufacturer = car.manufacturer?.toLowerCase() || '';
-      const modelName = car.modelName?.toLowerCase() || '';
-      const year = car.year?.toLowerCase() || '';
-      const date = formatDate(car.createdAt).toLowerCase();
+      const ownerName = (car.userId?.name || '').toLowerCase();
+      const manufacturer = (car.manufacturer || '').toLowerCase();
+      const modelName = (car.modelName || '').toLowerCase();
+      const year = (car.year || '').toLowerCase();
+      
+      const searchLower = searchQuery.toLowerCase();
 
-      const matchesSearch = ownerName.includes(searchQuery.toLowerCase()) ||
-        manufacturer.includes(searchQuery.toLowerCase()) ||
-        modelName.includes(searchQuery.toLowerCase()) ||
-        year.includes(searchQuery.toLowerCase()) ||
-        date.includes(searchQuery.toLowerCase());
-
-      return matchesSearch;
+      return ownerName.includes(searchLower) ||
+             manufacturer.includes(searchLower) ||
+             modelName.includes(searchLower) ||
+             year.includes(searchLower);
     });
 
     setFilteredCars(filtered);
     setCurrentPage(1);
-  }, [cars, searchQuery]);
+  }, [apiResponse?.data, searchQuery]); // Only re-run when API data or search changes
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredCars.length / itemsPerPage);
